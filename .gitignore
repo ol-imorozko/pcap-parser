@@ -1,3 +1,6 @@
 obj/
 pcap-parser
 *.pcap
+.cache
+.clangd
+compile_commands.json
