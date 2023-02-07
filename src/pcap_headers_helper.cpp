@@ -45,8 +45,8 @@ PcapFileHeader PcapHeadersHelper::TransfrormRawFileHeader(
 PcapPacketHeader PcapHeadersHelper::TransfrormRawPacketHeader(
     PcapPacketHeader& header) {
   header.ts_sec = ReadU32(header.ts_sec);
-  header.ts_usec = ReadU16(header.ts_usec);
-  header.incl_len = ReadU16(header.incl_len);
+  header.ts_usec = ReadU32(header.ts_usec);
+  header.incl_len = ReadU32(header.incl_len);
   header.orig_len = ReadU32(header.orig_len);
 
   return header;
