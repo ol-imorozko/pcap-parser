@@ -60,11 +60,45 @@ int main(int argc, char* argv[]) {
     file.read(reinterpret_cast<char*>(packet_data), packet_header.incl_len);
 
     // Do something with the packet data
-    // ...
+    // temporarily dumping it
+    hexdump(packet_data, packet_header.incl_len);
   }
 
   // Close the file
   file.close();
 
   return 0;
+}
+
+// Temporary
+#include <iomanip>
+
+constexpr int BYTES_PER_LINE = 16;
+
+void hexdump(const uint8_t* data, int size) {
+  int i;
+  for (i = 0; i < size; i++) {
+    if (i % BYTES_PER_LINE == 0) {
+      std::cout << std::hex << std::setfill('0') << std::setw(8) << i << ": ";
+    }
+    std::cout << std::hex << std::setfill('0') << std::setw(2) << int(data[i])
+              << " ";
+    if ((i + 1) % BYTES_PER_LINE == 0 || i + 1 == size) {
+      int j;
+      for (j = 0; j < BYTES_PER_LINE - (i % BYTES_PER_LINE) - 1; j++) {
+        std::cout << "   ";
+      }
+      if ((i + 1) % BYTES_PER_LINE != 0) {
+        std::cout << " ";
+      }
+      for (j = i - (i % BYTES_PER_LINE); j <= i; j++) {
+        if (data[j] >= 32 && data[j] <= 126) {
+          std::cout << char(data[j]);
+        } else {
+          std::cout << ".";
+        }
+      }
+      std::cout << std::endl;
+    }
+  }
 }
