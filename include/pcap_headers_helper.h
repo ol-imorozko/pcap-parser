@@ -9,24 +9,24 @@ enum class Endianness {
 };
 
 class PcapHeadersHelper {
-private:
-  uint32_t magic_number{};
-  Endianness endianness;
+ private:
+  uint32_t magic_number_;
+  Endianness endianness_;
 
-  uint32_t read_u32(uint32_t data);
+  uint32_t ReadU32(uint32_t data);
 
-  uint16_t read_u16(uint16_t data);
+  uint16_t ReadU16(uint16_t data);
 
-public:
+ public:
   explicit PcapHeadersHelper(uint32_t magic_number);
 
-  [[nodiscard]] bool file_valid() const;
+  [[nodiscard]] bool FileValid() const;
 
-  static void printPcapFileHeader(const PcapFileHeader &header);
+  static void PrintPcapFileHeader(const PcapFileHeader& header);
 
-  PcapFileHeader transfrormRawFileHeader(PcapFileHeader &header);
+  PcapFileHeader TransfrormRawFileHeader(PcapFileHeader& header);
 
-  static void printPcapPacketHeader(const PcapPacketHeader &header);
+  static void PrintPcapPacketHeader(const PcapPacketHeader& header);
 
-  PcapPacketHeader transfrormRawPacketHeader(PcapPacketHeader &header);
+  PcapPacketHeader TransfrormRawPacketHeader(PcapPacketHeader& header);
 };

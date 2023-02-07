@@ -20,8 +20,7 @@ struct PcapPacketHeader {
 };
 #pragma pack(pop)
 
-constexpr uint32_t MAGIC_MICROSECS_BE = 0xA1B2C3D4;
-constexpr uint32_t MAGIC_NANOSECS_BE = 0xA1B23C4D;
-constexpr uint32_t MAGIC_MICROSECS_LE = 0xD4C3B2A1;
-constexpr uint32_t MAGIC_NANOSECS_LE = 0x4D3CB2A1;
-
+constexpr uint32_t kMagicMicrosecsBe = 0xA1B2C3D4;
+constexpr uint32_t kMagicNanosecsBe = 0xA1B23C4D;
+constexpr uint32_t kMagicMicrosecsLe = 0xD4C3B2A1;
+constexpr uint32_t kMagicnanosecsLe = 0x4D3CB2A1;
