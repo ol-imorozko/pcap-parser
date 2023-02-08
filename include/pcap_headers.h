@@ -33,8 +33,8 @@ struct PcapFileHeader {
 
   [[nodiscard]] Endianness get_endianess() const {
     if (magic_number == kMagicMicrosecsBe || magic_number == kMagicNanosecsBe)
-      return Endianness::SAME_ENDIAN;
-    return Endianness::DIFF_ENDIAN;
+      return Endianness::kSameEndian;
+    return Endianness::kDiffEndian;
   }
 
   [[nodiscard]] TimeFormat get_timeformat() const {
