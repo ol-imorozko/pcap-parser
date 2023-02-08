@@ -1,5 +1,4 @@
 #pragma once
-#include <byteswap.h>
 #include <cstdint>
 
 enum class Endianness {
@@ -7,24 +6,22 @@ enum class Endianness {
   kDiffEndian,
 };
 
-class Transformer {
+class SingletonTransformer {
  private:
   Endianness endianness_;
+  static SingletonTransformer* singleton_;
+
+  explicit SingletonTransformer(Endianness endianness)
+      : endianness_(endianness) {}
 
  public:
-  explicit Transformer(Endianness endianness) : endianness_(endianness) {}
+  SingletonTransformer(SingletonTransformer& other) = delete;
 
-  uint32_t ReadU32(uint32_t data) {
-    if (endianness_ == Endianness::kSameEndian)
-      return data;
+  void operator=(const SingletonTransformer&) = delete;
 
-    return bswap_32(data);
-  }
+  static SingletonTransformer* GetInstance(Endianness endianness);
 
-  uint16_t ReadU16(uint16_t data) {
-    if (endianness_ == Endianness::kSameEndian)
-      return data;
+  uint32_t ReadU32(uint32_t data);
 
-    return bswap_16(data);
-  }
+  uint16_t ReadU16(uint16_t data);
 };

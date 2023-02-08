@@ -3,58 +3,41 @@
 #include <functional>
 #include <string>
 
+#include "include/raw_pcap_headers.h"
 #include "include/transformer.h"
 
-constexpr uint32_t kMagicMicrosecsBe = 0xA1B2C3D4;
-constexpr uint32_t kMagicNanosecsBe = 0xA1B23C4D;
-constexpr uint32_t kMagicMicrosecsLe = 0xD4C3B2A1;
-constexpr uint32_t kMagicNanosecsLe = 0x4D3CB2A1;
+class PcapFileHeader {
+ private:
+  RawPcapFileHeader& cooked_header_;
+  Endianness endianness_;
+  TimeFormat tf_;
+  LinkType lt_;
 
-enum class TimeFormat {
-  kUSec,  // Microseconds
-  KNSec,  // Nanoseconds
+ public:
+  explicit PcapFileHeader(RawPcapFileHeader& raw_header);
+
+  [[nodiscard]] Endianness GetEndianness() const { return endianness_; }
+
+  [[nodiscard]] TimeFormat GetTimeFormat() const { return tf_; }
+
+  [[nodiscard]] LinkType GetLinkType() const { return lt_; }
+
+  void Print() const;
 };
 
-#pragma pack(push, 1)
-struct PcapFileHeader {
-  uint32_t magic_number;  /* magic number */
-  uint16_t version_major; /* major version number */
-  uint16_t version_minor; /* minor version number */
-  uint32_t reserved1;     /* unused, previously was "GMT to local correction" */
-  uint32_t reserved2;     /* unused, previously was "accuracy of timestamps" */
-  uint32_t snaplen;       /* max length of captured packets, in octets */
-  uint32_t linktype;      /* data link type */
+class PcapPacketHeader {
+ private:
+  RawPcapPacketHeader& cooked_header_;
+  TimeFormat tf_;
 
-  [[nodiscard]] bool FileValid() const {
-    return magic_number == kMagicMicrosecsBe ||
-           magic_number == kMagicMicrosecsLe ||
-           magic_number == kMagicNanosecsBe || magic_number == kMagicNanosecsLe;
-  }
+ public:
+  explicit PcapPacketHeader(RawPcapPacketHeader& raw_header,
+                            PcapFileHeader& file_header);
 
-  [[nodiscard]] Endianness get_endianess() const {
-    if (magic_number == kMagicMicrosecsBe || magic_number == kMagicNanosecsBe)
-      return Endianness::kSameEndian;
-    return Endianness::kDiffEndian;
-  }
-
-  [[nodiscard]] TimeFormat get_timeformat() const {
-    if (magic_number == kMagicMicrosecsBe || magic_number == kMagicMicrosecsLe)
-      return TimeFormat::kUSec;
-    return TimeFormat::KNSec;
+  [[nodiscard]] unsigned int GetCapturedPacketLength() const {
+    return cooked_header_.incl_len;
   }
 
   void Print() const;
-  void Transform(Transformer& t);
+  void PrintTimeStamp() const;
 };
-
-struct PcapPacketHeader {
-  uint32_t ts_sec;       /* timestamp seconds */
-  uint32_t ts_u_or_nsec; /* timestamp micro/nanoseconds */
-  uint32_t incl_len;     /* number of octets of packet saved in file */
-  uint32_t orig_len;     /* actual length of packet */
-
-  void Print() const;
-  void Transform(Transformer& t);
-  void PrintTimeStamp(TimeFormat& t) const;
-};
-#pragma pack(pop)

@@ -11,11 +11,38 @@ T ReadRawHeader(std::ifstream& file) {
   return raw_header;
 }
 
-std::string TimeFormatToString(TimeFormat& tf) {
-  return tf == TimeFormat::kUSec ? "Microseconds" : "Nanoseconds";
-}
+void hexdump(const uint8_t* data, size_t size);
 
-void hexdump(const uint8_t* data, int size);
+void ParsePcapPackets(PcapFileHeader& file_header, std::ifstream& file) {
+  file_header.Print();
+
+  // Read PCAP packets
+  while (!file.eof()) {
+    // Read raw PCAP packet header
+    auto raw_packet_header = ReadRawHeader<RawPcapPacketHeader>(file);
+
+    // Check if it's the end of file
+    if (file.eof())
+      break;
+
+    // Get normal PCAP packet header
+    PcapPacketHeader packet_header(raw_packet_header, file_header);
+
+    packet_header.Print();
+
+    // Read packet data
+    // TODO: fix this
+    unsigned int packet_length = packet_header.GetCapturedPacketLength();
+    uint8_t packet_data[packet_length];
+    memset(packet_data, 0, packet_length);
+    file.read(reinterpret_cast<char*>(packet_data), packet_length);
+
+    // Do something with the packet data
+    // temporarily dumping it
+    packet_header.PrintTimeStamp();
+    /* hexdump(packet_data, packet_length); */
+  }
+}
 
 int main(int argc, char* argv[]) {
   // Check if the file name is provided
@@ -32,46 +59,14 @@ int main(int argc, char* argv[]) {
   }
 
   // Read raw PCAP file header
-  auto file_header = ReadRawHeader<PcapFileHeader>(file);
+  auto raw_file_header = ReadRawHeader<RawPcapFileHeader>(file);
 
-  // Check if it's a PCAP file
-  if (!file_header.FileValid()) {
-    std::cout << "Not a PCAP file" << std::endl;
-    return 0;
-  }
-
-  //Create transformer object to transform headers according to endianness
-  Transformer transformer(file_header.get_endianess());
-
-  // Transfrorm raw PCAP file header and print it
-  file_header.Transform(transformer);
-  file_header.Print();
-
-  TimeFormat time_format = file_header.get_timeformat();
-  std::cout << TimeFormatToString(time_format) << " timestamp" << std::endl;
-
-  // Read PCAP packets
-  while (!file.eof()) {
-    // Read raw PCAP packet header
-    auto packet_header = ReadRawHeader<PcapPacketHeader>(file);
-
-    // Check if it's the end of file
-    if (file.eof())
-      break;
-
-    // Transfrorm raw PCAP packet header and print it
-    packet_header.Transform(transformer);
-    packet_header.Print();
-
-    // Read packet data
-    uint8_t packet_data[packet_header.incl_len];
-    memset(packet_data, 0, packet_header.incl_len);
-    file.read(reinterpret_cast<char*>(packet_data), packet_header.incl_len);
-
-    // Do something with the packet data
-    // temporarily dumping it
-    packet_header.PrintTimeStamp(time_format);
-    hexdump(packet_data, packet_header.incl_len);
+  // Get normal PCAP file header
+  try {
+    PcapFileHeader file_header(raw_file_header);
+    ParsePcapPackets(file_header, file);
+  } catch (const std::exception& e) {
+    std::cerr << argv[1] << "is not a PCAP file" << std::endl;
   }
 
   // Close the file
@@ -85,8 +80,8 @@ int main(int argc, char* argv[]) {
 
 constexpr int BYTES_PER_LINE = 16;
 
-void hexdump(const uint8_t* data, int size) {
-  int i;
+void hexdump(const uint8_t* data, size_t size) {
+  size_t i;
   for (i = 0; i < size; i++) {
     if (i % BYTES_PER_LINE == 0) {
       std::cout << std::hex << std::setfill('0') << std::setw(8) << i << ": ";
@@ -94,7 +89,7 @@ void hexdump(const uint8_t* data, int size) {
     std::cout << std::hex << std::setfill('0') << std::setw(2) << int(data[i])
               << " ";
     if ((i + 1) % BYTES_PER_LINE == 0 || i + 1 == size) {
-      int j;
+      size_t j;
       for (j = 0; j < BYTES_PER_LINE - (i % BYTES_PER_LINE) - 1; j++) {
         std::cout << "   ";
       }
