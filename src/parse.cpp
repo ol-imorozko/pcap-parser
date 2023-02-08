@@ -11,6 +11,10 @@ T ReadRawHeader(std::ifstream& file) {
   return raw_header;
 }
 
+std::string TimeFormatToString(TimeFormat& tf) {
+  return tf == TimeFormat::kUSec ? "Microseconds" : "Nanoseconds";
+}
+
 void hexdump(const uint8_t* data, int size);
 
 int main(int argc, char* argv[]) {
@@ -43,6 +47,9 @@ int main(int argc, char* argv[]) {
   file_header.Transform(transformer);
   file_header.Print();
 
+  TimeFormat time_format = file_header.get_timeformat();
+  std::cout << TimeFormatToString(time_format) << " timestamp" << std::endl;
+
   // Read PCAP packets
   while (!file.eof()) {
     // Read raw PCAP packet header
@@ -63,6 +70,7 @@ int main(int argc, char* argv[]) {
 
     // Do something with the packet data
     // temporarily dumping it
+    packet_header.PrintTimeStamp(time_format);
     hexdump(packet_data, packet_header.incl_len);
   }
 
@@ -100,7 +108,7 @@ void hexdump(const uint8_t* data, int size) {
           std::cout << ".";
         }
       }
-      std::cout << std::endl;
+      std::cout << std::dec << std::endl;
     }
   }
 }

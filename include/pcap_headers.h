@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <functional>
+#include <string>
 
 #include "include/transformer.h"
 
@@ -8,6 +9,11 @@ constexpr uint32_t kMagicMicrosecsBe = 0xA1B2C3D4;
 constexpr uint32_t kMagicNanosecsBe = 0xA1B23C4D;
 constexpr uint32_t kMagicMicrosecsLe = 0xD4C3B2A1;
 constexpr uint32_t kMagicNanosecsLe = 0x4D3CB2A1;
+
+enum class TimeFormat {
+  kUSec,  // Microseconds
+  KNSec,  // Nanoseconds
+};
 
 #pragma pack(push, 1)
 struct PcapFileHeader {
@@ -31,17 +37,24 @@ struct PcapFileHeader {
     return Endianness::DIFF_ENDIAN;
   }
 
+  [[nodiscard]] TimeFormat get_timeformat() const {
+    if (magic_number == kMagicMicrosecsBe || magic_number == kMagicMicrosecsLe)
+      return TimeFormat::kUSec;
+    return TimeFormat::KNSec;
+  }
+
   void Print() const;
   void Transform(Transformer& t);
 };
 
 struct PcapPacketHeader {
-  uint32_t ts_sec;   /* timestamp seconds */
-  uint32_t ts_usec;  /* timestamp micro/nanoseconds */
-  uint32_t incl_len; /* number of octets of packet saved in file */
-  uint32_t orig_len; /* actual length of packet */
+  uint32_t ts_sec;       /* timestamp seconds */
+  uint32_t ts_u_or_nsec; /* timestamp micro/nanoseconds */
+  uint32_t incl_len;     /* number of octets of packet saved in file */
+  uint32_t orig_len;     /* actual length of packet */
 
   void Print() const;
   void Transform(Transformer& t);
+  void PrintTimeStamp(TimeFormat& t) const;
 };
 #pragma pack(pop)
