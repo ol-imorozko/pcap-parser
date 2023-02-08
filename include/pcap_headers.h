@@ -7,7 +7,7 @@
 constexpr uint32_t kMagicMicrosecsBe = 0xA1B2C3D4;
 constexpr uint32_t kMagicNanosecsBe = 0xA1B23C4D;
 constexpr uint32_t kMagicMicrosecsLe = 0xD4C3B2A1;
-constexpr uint32_t kMagicnanosecsLe = 0x4D3CB2A1;
+constexpr uint32_t kMagicNanosecsLe = 0x4D3CB2A1;
 
 #pragma pack(push, 1)
 struct PcapFileHeader {
@@ -22,7 +22,7 @@ struct PcapFileHeader {
   [[nodiscard]] bool FileValid() const {
     return magic_number == kMagicMicrosecsBe ||
            magic_number == kMagicMicrosecsLe ||
-           magic_number == kMagicNanosecsBe || magic_number == kMagicnanosecsLe;
+           magic_number == kMagicNanosecsBe || magic_number == kMagicNanosecsLe;
   }
 
   [[nodiscard]] Endianness get_endianess() const {
