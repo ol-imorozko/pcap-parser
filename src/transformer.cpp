@@ -2,6 +2,8 @@
 
 #include "include/transformer.h"
 
+namespace pcap_parse {
+
 SingletonTransformer* SingletonTransformer::singleton_ = nullptr;
 
 SingletonTransformer* SingletonTransformer::GetInstance(Endianness endianness) {
@@ -24,3 +26,5 @@ uint16_t SingletonTransformer::ReadU16(uint16_t data) {
 
   return bswap_16(data);
 }
+
+}  // namespace pcap_parse

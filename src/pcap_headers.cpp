@@ -6,6 +6,8 @@
 
 #include "include/pcap_headers.h"
 
+namespace pcap_parse {
+
 std::string TimeFormatToString(TimeFormat tf) {
   return tf == TimeFormat::kUSec ? "microseconds" : "nanoseconds";
 }
@@ -16,7 +18,7 @@ bool FileValid(uint32_t magic_number) {
          magic_number == kMagicNanosecsBe || magic_number == kMagicNanosecsLe;
 }
 
-void Transform(RawPcapFileHeader& raw_header, Endianness endianness) {
+void Transform(RawFileHeader& raw_header, Endianness endianness) {
   SingletonTransformer* t = SingletonTransformer::GetInstance(endianness);
 
   raw_header.magic_number = t->ReadU32(raw_header.magic_number);
@@ -26,7 +28,7 @@ void Transform(RawPcapFileHeader& raw_header, Endianness endianness) {
   raw_header.linktype = t->ReadU32(raw_header.linktype);
 }
 
-void Transform(RawPcapPacketHeader& raw_header, Endianness endianness) {
+void Transform(RawPacketHeader& raw_header, Endianness endianness) {
   SingletonTransformer* t = SingletonTransformer::GetInstance(endianness);
 
   raw_header.ts_sec = t->ReadU32(raw_header.ts_sec);
@@ -35,8 +37,7 @@ void Transform(RawPcapPacketHeader& raw_header, Endianness endianness) {
   raw_header.orig_len = t->ReadU32(raw_header.orig_len);
 }
 
-PcapFileHeader::PcapFileHeader(RawPcapFileHeader& raw_header)
-    : cooked_header_(raw_header) {
+FileHeader::FileHeader(RawFileHeader& raw_header) : cooked_header_(raw_header) {
 
   if (!FileValid(raw_header.magic_number))
     throw std::exception();
@@ -59,8 +60,7 @@ PcapFileHeader::PcapFileHeader(RawPcapFileHeader& raw_header)
   lt_ = static_cast<LinkType>(cooked_header_.linktype);
 }
 
-PcapPacketHeader::PcapPacketHeader(RawPcapPacketHeader& raw_header,
-                                   PcapFileHeader& file_header)
+PacketHeader::PacketHeader(RawPacketHeader& raw_header, FileHeader& file_header)
     : cooked_header_(raw_header) {
 
   tf_ = file_header.GetTimeFormat();
@@ -69,7 +69,7 @@ PcapPacketHeader::PcapPacketHeader(RawPcapPacketHeader& raw_header,
   Transform(raw_header, file_header.GetEndianness());
 }
 
-void PcapFileHeader::Print() const {
+void FileHeader::Print() const {
   std::cout << "Pcap File Header\n";
   std::cout << "*****************\n";
   std::cout << "Magic Number: 0x" << std::hex << cooked_header_.magic_number
@@ -82,7 +82,7 @@ void PcapFileHeader::Print() const {
   std::cout << "*****************" << std::endl;
 }
 
-void PcapPacketHeader::Print() const {
+void PacketHeader::Print() const {
   std::cout << "Pcap Packet Header\n";
   std::cout << "-----------------\n";
   std::cout << "Timestamp Seconds: " << cooked_header_.ts_sec << '\n';
@@ -93,7 +93,7 @@ void PcapPacketHeader::Print() const {
   std::cout << "-----------------" << std::endl;
 }
 
-void PcapPacketHeader::PrintTimeStamp() const {
+void PacketHeader::PrintTimeStamp() const {
   using namespace std::chrono;
 
   auto timePoint = system_clock::from_time_t(cooked_header_.ts_sec);
@@ -119,3 +119,5 @@ void PcapPacketHeader::PrintTimeStamp() const {
               << cooked_header_.ts_u_or_nsec << std::endl;
   }
 }
+
+}  // namespace pcap_parse

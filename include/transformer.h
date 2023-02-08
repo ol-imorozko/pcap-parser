@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 
+namespace pcap_parse {
+
 enum class Endianness {
   kSameEndian,
   kDiffEndian,
@@ -25,3 +27,5 @@ class SingletonTransformer {
 
   uint16_t ReadU16(uint16_t data);
 };
+
+}  // namespace pcap_parse

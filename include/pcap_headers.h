@@ -6,15 +6,17 @@
 #include "include/raw_pcap_headers.h"
 #include "include/transformer.h"
 
-class PcapFileHeader {
+namespace pcap_parse {
+
+class FileHeader {
  private:
-  RawPcapFileHeader& cooked_header_;
+  RawFileHeader& cooked_header_;
   Endianness endianness_;
   TimeFormat tf_;
   LinkType lt_;
 
  public:
-  explicit PcapFileHeader(RawPcapFileHeader& raw_header);
+  explicit FileHeader(RawFileHeader& raw_header);
 
   [[nodiscard]] Endianness GetEndianness() const { return endianness_; }
 
@@ -25,14 +27,13 @@ class PcapFileHeader {
   void Print() const;
 };
 
-class PcapPacketHeader {
+class PacketHeader {
  private:
-  RawPcapPacketHeader& cooked_header_;
+  RawPacketHeader& cooked_header_;
   TimeFormat tf_;
 
  public:
-  explicit PcapPacketHeader(RawPcapPacketHeader& raw_header,
-                            PcapFileHeader& file_header);
+  explicit PacketHeader(RawPacketHeader& raw_header, FileHeader& file_header);
 
   [[nodiscard]] unsigned int GetCapturedPacketLength() const {
     return cooked_header_.incl_len;
@@ -41,3 +42,5 @@ class PcapPacketHeader {
   void Print() const;
   void PrintTimeStamp() const;
 };
+
+}  // namespace pcap_parse

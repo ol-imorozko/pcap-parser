@@ -13,20 +13,20 @@ T ReadRawHeader(std::ifstream& file) {
 
 void hexdump(const uint8_t* data, size_t size);
 
-void ParsePcapPackets(PcapFileHeader& file_header, std::ifstream& file) {
+void ParsePcapPackets(pcap_parse::FileHeader& file_header, std::ifstream& file) {
   file_header.Print();
 
   // Read PCAP packets
   while (!file.eof()) {
     // Read raw PCAP packet header
-    auto raw_packet_header = ReadRawHeader<RawPcapPacketHeader>(file);
+    auto raw_packet_header = ReadRawHeader<pcap_parse::RawPacketHeader>(file);
 
     // Check if it's the end of file
     if (file.eof())
       break;
 
     // Get normal PCAP packet header
-    PcapPacketHeader packet_header(raw_packet_header, file_header);
+    pcap_parse::PacketHeader packet_header(raw_packet_header, file_header);
 
     packet_header.Print();
 
@@ -40,7 +40,7 @@ void ParsePcapPackets(PcapFileHeader& file_header, std::ifstream& file) {
     // Do something with the packet data
     // temporarily dumping it
     packet_header.PrintTimeStamp();
-    /* hexdump(packet_data, packet_length); */
+    hexdump(packet_data, packet_length);
   }
 }
 
@@ -59,11 +59,11 @@ int main(int argc, char* argv[]) {
   }
 
   // Read raw PCAP file header
-  auto raw_file_header = ReadRawHeader<RawPcapFileHeader>(file);
+  auto raw_file_header = ReadRawHeader<pcap_parse::RawFileHeader>(file);
 
   // Get normal PCAP file header
   try {
-    PcapFileHeader file_header(raw_file_header);
+    pcap_parse::FileHeader file_header(raw_file_header);
     ParsePcapPackets(file_header, file);
   } catch (const std::exception& e) {
     std::cerr << argv[1] << "is not a PCAP file" << std::endl;
