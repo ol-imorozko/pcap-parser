@@ -5,6 +5,13 @@
 #include "include/pcap_headers.h"
 #include "include/pcap_headers_helper.h"
 
+template <class T>
+T ReadRawHeader(std::ifstream& file) {
+  T raw_header{};
+  file.read(reinterpret_cast<char*>(&raw_header), sizeof(T));
+  return raw_header;
+}
+
 void hexdump(const uint8_t* data, int size);
 
 int main(int argc, char* argv[]) {
@@ -22,8 +29,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Read raw PCAP file header
-  PcapFileHeader raw_file_header{};
-  file.read(reinterpret_cast<char*>(&raw_file_header), sizeof(PcapFileHeader));
+  auto raw_file_header = ReadRawHeader<PcapFileHeader>(file);
 
   PcapHeadersHelper headers_helper(raw_file_header.magic_number);
 
@@ -41,9 +47,7 @@ int main(int argc, char* argv[]) {
   // Read PCAP packets
   while (!file.eof()) {
     // Read PCAP packet header
-    PcapPacketHeader raw_packet_header{};
-    file.read(reinterpret_cast<char*>(&raw_packet_header),
-              sizeof(PcapPacketHeader));
+    auto raw_packet_header = ReadRawHeader<PcapPacketHeader>(file);
 
     // Check if it's the end of file
     if (file.eof())
