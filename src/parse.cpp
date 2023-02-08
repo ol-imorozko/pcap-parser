@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include "include/pcap_headers.h"
-#include "include/pcap_headers_helper.h"
 
 template <class T>
 T ReadRawHeader(std::ifstream& file) {
@@ -16,7 +15,7 @@ void hexdump(const uint8_t* data, int size);
 
 int main(int argc, char* argv[]) {
   // Check if the file name is provided
-  if (argc < 2) {
+  if (argc != 2) {
     std::cout << "Usage: pcap_parser <file_name>" << std::endl;
     return 0;
   }
@@ -29,34 +28,33 @@ int main(int argc, char* argv[]) {
   }
 
   // Read raw PCAP file header
-  auto raw_file_header = ReadRawHeader<PcapFileHeader>(file);
-
-  PcapHeadersHelper headers_helper(raw_file_header.magic_number);
+  auto file_header = ReadRawHeader<PcapFileHeader>(file);
 
   // Check if it's a PCAP file
-  if (!headers_helper.FileValid()) {
+  if (!file_header.FileValid()) {
     std::cout << "Not a PCAP file" << std::endl;
     return 0;
   }
 
-  // Transfrorm raw PCAP file header according to endianness
-  PcapFileHeader file_header =
-      headers_helper.TransfrormRawFileHeader(raw_file_header);
-  PcapHeadersHelper::PrintPcapFileHeader(file_header);
+  //Create transformer object to transform headers according to endianness
+  Transformer transformer(file_header.get_endianess());
+
+  // Transfrorm raw PCAP file header and print it
+  file_header.Transform(transformer);
+  file_header.Print();
 
   // Read PCAP packets
   while (!file.eof()) {
-    // Read PCAP packet header
-    auto raw_packet_header = ReadRawHeader<PcapPacketHeader>(file);
+    // Read raw PCAP packet header
+    auto packet_header = ReadRawHeader<PcapPacketHeader>(file);
 
     // Check if it's the end of file
     if (file.eof())
       break;
 
-    // Transfrorm raw PCAP packet header according to endianness
-    PcapPacketHeader packet_header =
-        headers_helper.TransfrormRawPacketHeader(raw_packet_header);
-    PcapHeadersHelper::PrintPcapPacketHeader(packet_header);
+    // Transfrorm raw PCAP packet header and print it
+    packet_header.Transform(transformer);
+    packet_header.Print();
 
     // Read packet data
     uint8_t packet_data[packet_header.incl_len];

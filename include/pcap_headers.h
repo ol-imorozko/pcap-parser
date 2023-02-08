@@ -1,5 +1,13 @@
 #pragma once
 #include <cstdint>
+#include <functional>
+
+#include "include/transformer.h"
+
+constexpr uint32_t kMagicMicrosecsBe = 0xA1B2C3D4;
+constexpr uint32_t kMagicNanosecsBe = 0xA1B23C4D;
+constexpr uint32_t kMagicMicrosecsLe = 0xD4C3B2A1;
+constexpr uint32_t kMagicnanosecsLe = 0x4D3CB2A1;
 
 #pragma pack(push, 1)
 struct PcapFileHeader {
@@ -10,6 +18,21 @@ struct PcapFileHeader {
   uint32_t reserved2;     /* unused, previously was "accuracy of timestamps" */
   uint32_t snaplen;       /* max length of captured packets, in octets */
   uint32_t linktype;      /* data link type */
+
+  [[nodiscard]] bool FileValid() const {
+    return magic_number == kMagicMicrosecsBe ||
+           magic_number == kMagicMicrosecsLe ||
+           magic_number == kMagicNanosecsBe || magic_number == kMagicnanosecsLe;
+  }
+
+  [[nodiscard]] Endianness get_endianess() const {
+    if (magic_number == kMagicMicrosecsBe || magic_number == kMagicNanosecsBe)
+      return Endianness::SAME_ENDIAN;
+    return Endianness::DIFF_ENDIAN;
+  }
+
+  void Print() const;
+  void Transform(Transformer& t);
 };
 
 struct PcapPacketHeader {
@@ -17,10 +40,8 @@ struct PcapPacketHeader {
   uint32_t ts_usec;  /* timestamp micro/nanoseconds */
   uint32_t incl_len; /* number of octets of packet saved in file */
   uint32_t orig_len; /* actual length of packet */
+
+  void Print() const;
+  void Transform(Transformer& t);
 };
 #pragma pack(pop)
-
-constexpr uint32_t kMagicMicrosecsBe = 0xA1B2C3D4;
-constexpr uint32_t kMagicNanosecsBe = 0xA1B23C4D;
-constexpr uint32_t kMagicMicrosecsLe = 0xD4C3B2A1;
-constexpr uint32_t kMagicnanosecsLe = 0x4D3CB2A1;
