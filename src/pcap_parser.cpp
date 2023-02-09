@@ -47,43 +47,47 @@ packet_parse::RawProto RunParserAndTrim(packet_parse::BaseParser& parser,
   return next_proto;
 }
 
+bool ApplyAllParsers(std::ifstream& file, size_t& len, uint32_t initial_proto,
+                     size_t bytes_to_trim) {
+
+  auto next_proto = static_cast<packet_parse::RawProto>(initial_proto);
+
+  packet_parse::L2Parser l2p;
+  next_proto = RunParserAndTrim(l2p, file, len, next_proto, bytes_to_trim);
+
+  if (len == 0)
+    return true;
+
+  packet_parse::L3Parser l3p;
+  next_proto = RunParserAndTrim(l3p, file, len, next_proto, bytes_to_trim);
+
+  if (len == 0)
+    return true;
+
+  packet_parse::L4Parser l4p;
+  next_proto = RunParserAndTrim(l4p, file, len, next_proto, bytes_to_trim);
+
+  if (len == 0)
+    return true;
+
+  return false;
+}
+
 void ParsePacket(std::ifstream& file,
                  pcap_parse::PacketHeader pcap_packet_header,
                  uint32_t initial_proto) {
-  size_t real_packet_length = pcap_packet_header.GetRealPacketLength();
-  size_t captured_packet_length = pcap_packet_header.GetCapturedPacketLength();
+  size_t len = pcap_packet_header.GetRealPacketLength();
+  size_t captured = pcap_packet_header.GetCapturedPacketLength();
   size_t bytes_to_trim = 0;
 
-  if (captured_packet_length > real_packet_length)
-    bytes_to_trim = captured_packet_length - real_packet_length;
+  if (captured > len)
+    bytes_to_trim = captured - len;
 
-  {
-    packet_parse::L2Parser l2p;
-    packet_parse::RawProto next_proto = RunParserAndTrim(
-        l2p, file, real_packet_length,
-        static_cast<packet_parse::RawProto>(initial_proto), bytes_to_trim);
-
-    if (real_packet_length == 0)
-      return;
-
-    packet_parse::L3Parser l3p;
-    next_proto = RunParserAndTrim(l3p, file, real_packet_length, next_proto,
-                                  bytes_to_trim);
-
-    if (real_packet_length == 0)
-      return;
-
-    packet_parse::L4Parser l4p;
-    next_proto = RunParserAndTrim(l4p, file, real_packet_length, next_proto,
-                                  bytes_to_trim);
-
-    if (real_packet_length == 0)
-      return;
+  if (!ApplyAllParsers(file, len, initial_proto, bytes_to_trim)) {
+    std::cerr << "Parsing ended but " << len << " bytes left:\n";
+    packet_parse::HexdumpBytes(file, len);
+    packet_parse::TrimBytes(file, bytes_to_trim);
   }
-
-  std::cerr << "Parsing ended but " << real_packet_length << " bytes left:\n";
-  packet_parse::HexdumpBytes(file, real_packet_length);
-  packet_parse::TrimBytes(file, bytes_to_trim);
 }
 
 void ParsePcapPackets(pcap_parse::FileHeader& file_header,
