@@ -42,6 +42,41 @@ RawProto L4Parser::ParseUDP(std::ifstream& file, size_t& packet_size) {
   return 0;
 }
 
+void PrintICMPHeader(const ICMPHeader& header) {
+
+  std::cout << "ICMP header:" << '\n';
+  std::cout << "  Type: " << static_cast<int>(header.type) << '\n';
+  std::cout << "  Code: " << static_cast<int>(header.code) << '\n';
+  std::cout << "  Checksum: 0x" << std::hex << header.checksum << '\n';
+  std::cout << "  Identifier: " << header.identifier << '\n';
+  std::cout << "  Sequence number: " << header.sequence_number << std::dec
+            << '\n';
+}
+
+RawProto L4Parser::ParseICMP(std::ifstream& file, size_t& packet_size) {
+  ICMPHeader header{};
+
+  if (packet_size < kICMPHeaderSize)
+    throw NotEnoughData("ICMP", kICMPHeaderSize, packet_size);
+
+  file.read(reinterpret_cast<char*>(&header), kICMPHeaderSize);
+
+  if (!file) {
+    packet_size = 0;
+    throw EoF("ICMP", kICMPHeaderSize, file.gcount());
+  }
+
+  // Cause the data comes in a network byte order
+  header.checksum = ntohs(header.checksum);
+  header.identifier = ntohs(header.identifier);
+  header.sequence_number = ntohs(header.sequence_number);
+
+  PrintICMPHeader(header);
+
+  packet_size -= kICMPHeaderSize;
+  return 0;
+}
+
 RawProto L4Parser::Parse(std::ifstream& file, size_t& packet_size,
                          RawProto raw_proto) {
   auto proto = static_cast<Proto>(raw_proto);
@@ -49,6 +84,8 @@ RawProto L4Parser::Parse(std::ifstream& file, size_t& packet_size,
   switch (proto) {
     case Proto::kUDP:
       return ParseUDP(file, packet_size);
+    case Proto::kICMP:
+      return ParseICMP(file, packet_size);
     default:
       throw UnknownProto(raw_proto);
   }

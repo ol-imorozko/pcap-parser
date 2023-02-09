@@ -7,9 +7,12 @@ class L4Parser : public BaseParser {
  private:
   enum class Proto {
     kUDP = 17,
+    kICMP = 1,
   };
 
   static RawProto ParseUDP(std::ifstream& file, size_t& packet_size);
+
+  static RawProto ParseICMP(std::ifstream& file, size_t& packet_size);
 
  public:
   RawProto Parse(std::ifstream& file, size_t& packet_size,
@@ -17,6 +20,7 @@ class L4Parser : public BaseParser {
 };
 
 constexpr int kUDPHeaderSize = 8;
+constexpr int kICMPHeaderSize = 8;
 
 #pragma pack(push, 1)
 struct UDPHeader {
@@ -24,6 +28,14 @@ struct UDPHeader {
   uint16_t destination_port;
   uint16_t length;
   uint16_t checksum;
+};
+
+struct ICMPHeader {
+  uint8_t type;
+  uint8_t code;
+  uint16_t checksum;
+  uint16_t identifier;
+  uint16_t sequence_number;
 };
 #pragma pack(pop)
 
