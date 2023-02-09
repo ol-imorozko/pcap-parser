@@ -55,12 +55,13 @@ RawProto L3Parser::ParseIp(std::ifstream& file, size_t& packet_size) {
   }
 
   // Cause the data comes in a network byte order
+  // We don't have to do this for source and destination adresses,
+  // case we actually want them in newtwork byte order in order
+  // to print them via inet_ntop function.
   header.total_length = ntohs(header.total_length);
   header.identification = ntohs(header.identification);
   header.flags_and_fragment_offset = ntohs(header.flags_and_fragment_offset);
   header.header_checksum = ntohs(header.header_checksum);
-  header.source_address = ntohl(header.source_address);
-  header.destination_address = ntohl(header.destination_address);
 
   PrintIpHeader(header);
 

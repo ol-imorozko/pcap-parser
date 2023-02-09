@@ -16,7 +16,7 @@ class L3Parser : public BaseParser {
                  RawProto raw_proto) override;
 };
 
-constexpr int kIpHeaderSize = 14;
+constexpr int kIpHeaderSize = 20;
 
 #pragma pack(push, 1)
 struct IpHeader {
