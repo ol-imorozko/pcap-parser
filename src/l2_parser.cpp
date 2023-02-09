@@ -28,7 +28,7 @@ void PrintEthernetHeader(const EthernetHeader& header) {
   }
 
   std::cout << "\n  EtherType: 0x" << std::hex << std::setfill('0')
-            << std::setw(4) << header.etherType << std::dec << '\n';
+            << std::setw(4) << header.ethertype << std::dec << '\n';
 }
 
 RawProto L2Parser::ParseEthernet(std::ifstream& file, size_t& packet_size) {
@@ -45,12 +45,12 @@ RawProto L2Parser::ParseEthernet(std::ifstream& file, size_t& packet_size) {
   }
 
   // Cause the data comes in a network byte order
-  header.etherType = ntohs(header.etherType);
+  header.ethertype = ntohs(header.ethertype);
 
   PrintEthernetHeader(header);
 
   packet_size -= kEthernetHeaderSize;
-  return static_cast<RawProto>(header.etherType);
+  return static_cast<RawProto>(header.ethertype);
 }
 
 RawProto L2Parser::Parse(std::ifstream& file, size_t& packet_size,

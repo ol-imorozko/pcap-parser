@@ -22,7 +22,7 @@ constexpr int kEthernetHeaderSize = 14;
 struct EthernetHeader {
   uint8_t destination[6];
   uint8_t source[6];
-  uint16_t etherType;
+  uint16_t ethertype;
 };
 #pragma pack(pop)
 
