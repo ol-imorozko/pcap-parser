@@ -40,8 +40,8 @@ packet_parse::RawProto RunParserAndTrim(packet_parse::BaseParser& parser,
   packet_parse::RawProto next_proto =
       packet_parse::HandleParser(parser, file, len, proto);
 
-  if (len == 0 && file)
-    file.seekg(static_cast<long>(bytes_to_trim), std::ios::cur);
+  if (len == 0)
+    packet_parse::TrimBytes(file, bytes_to_trim);
 
   return next_proto;
 }
@@ -73,13 +73,9 @@ void ParsePacket(std::ifstream& file,
       return;
   }
 
-  std::cerr << "Parsing ended but still " << real_packet_length
-            << " bytes left. Ignore them." << std::endl;
-
-  if (file)
-    file.seekg(static_cast<long>(real_packet_length), std::ios::cur);
-  if (file)
-    file.seekg(static_cast<long>(bytes_to_trim), std::ios::cur);
+  std::cerr << "Parsing ended but " << real_packet_length << " bytes left:\n";
+  packet_parse::HexdumpBytes(file, real_packet_length);
+  packet_parse::TrimBytes(file, bytes_to_trim);
 }
 
 void ParsePcapPackets(pcap_parse::FileHeader& file_header,

@@ -30,7 +30,9 @@ class BaseParser {
                          RawProto raw_proto) = 0;
 };
 
-void hexdump(const uint8_t* data, size_t size);
+void HexdumpBytes(std::ifstream& file, size_t size);
+
+void TrimBytes(std::ifstream& file, size_t size);
 
 RawProto HandleParser(BaseParser& p, std::ifstream& file, size_t& packet_size,
                       RawProto curr_proto);

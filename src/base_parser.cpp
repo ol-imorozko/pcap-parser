@@ -7,28 +7,6 @@
 
 namespace packet_parse {
 
-RawProto HandleParser(BaseParser& p, std::ifstream& file, size_t& packet_size,
-                      RawProto curr_proto) {
-  try {
-    RawProto next_proto = p.Parse(file, packet_size, curr_proto);
-    return next_proto;
-  } catch (const std::exception& e) {
-    std::cerr << e.what() << "\nData left: \n";
-
-    if (packet_size == 0)
-      std::cerr << "No data left\n";
-    else {
-      uint8_t packet_data[packet_size];
-      file.read(reinterpret_cast<char*>(packet_data),
-                static_cast<long>(packet_size));
-      hexdump(packet_data, file.gcount());
-      packet_size = 0;
-    }
-
-    return 0;
-  }
-}
-
 constexpr int kBytesPerLine = 16;
 
 void hexdump(const uint8_t* data, size_t size) {
@@ -60,6 +38,36 @@ void hexdump(const uint8_t* data, size_t size) {
     }
   }
   std::cerr << std::dec;
+}
+
+void HexdumpBytes(std::ifstream& file, size_t size) {
+  uint8_t packet_data[size];
+  file.read(reinterpret_cast<char*>(packet_data), static_cast<long>(size));
+  hexdump(packet_data, file.gcount());
+}
+
+void TrimBytes(std::ifstream& file, size_t size) {
+  if (file)
+    file.seekg(static_cast<long>(size), std::ios::cur);
+}
+
+RawProto HandleParser(BaseParser& p, std::ifstream& file, size_t& packet_size,
+                      RawProto curr_proto) {
+  try {
+    RawProto next_proto = p.Parse(file, packet_size, curr_proto);
+    return next_proto;
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << "\nData left: \n";
+
+    if (packet_size == 0)
+      std::cerr << "No data left\n";
+    else {
+      HexdumpBytes(file, packet_size);
+      packet_size = 0;
+    }
+
+    return 0;
+  }
 }
 
 UnknownProto::UnknownProto(RawProto proto) {
