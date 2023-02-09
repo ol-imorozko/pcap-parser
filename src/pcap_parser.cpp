@@ -4,6 +4,7 @@
 
 #include "include/base_parser.h"
 #include "include/l2_parser.h"
+#include "include/l3_parser.h"
 #include "include/pcap_headers.h"
 
 template <class T>
@@ -55,20 +56,22 @@ void ParsePacket(std::ifstream& file,
   if (captured_packet_length > real_packet_length)
     bytes_to_trim = captured_packet_length - real_packet_length;
 
-  packet_parse::L2Parser l2p;
-  packet_parse::RawProto next_proto = RunParserAndTrim(
-      l2p, file, real_packet_length,
-      static_cast<packet_parse::RawProto>(initial_proto), bytes_to_trim);
+  {
+    packet_parse::L2Parser l2p;
+    packet_parse::RawProto next_proto = RunParserAndTrim(
+        l2p, file, real_packet_length,
+        static_cast<packet_parse::RawProto>(initial_proto), bytes_to_trim);
 
-  if (real_packet_length == 0)
-    return;
+    if (real_packet_length == 0)
+      return;
 
-  /* packet_parse::L2Parser l3p; */
-  /* packet_parse::RawProto next_proto = */
-  /*     TryParser(l3p, file, real_packet_length, next_proto, bytes_to_trim); */
+    packet_parse::L3Parser l3p;
+    next_proto = RunParserAndTrim(l3p, file, real_packet_length, next_proto,
+                                  bytes_to_trim);
 
-  if (real_packet_length == 0)
-    return;
+    if (real_packet_length == 0)
+      return;
+  }
 
   std::cerr << "Parsing ended but still " << real_packet_length
             << " bytes left. Ignore them." << std::endl;
