@@ -13,7 +13,8 @@ T ReadRawHeader(std::ifstream& file) {
 
 void hexdump(const uint8_t* data, size_t size);
 
-void ParsePcapPackets(pcap_parse::FileHeader& file_header, std::ifstream& file) {
+void ParsePcapPackets(pcap_parse::FileHeader& file_header,
+                      std::ifstream& file) {
   file_header.Print();
 
   // Read PCAP packets
@@ -32,6 +33,7 @@ void ParsePcapPackets(pcap_parse::FileHeader& file_header, std::ifstream& file) 
 
     // Read packet data
     // TODO: fix this
+    unsigned int packet_data_size = packet_header.GetRealPacketLength();
     unsigned int packet_length = packet_header.GetCapturedPacketLength();
     uint8_t packet_data[packet_length];
     memset(packet_data, 0, packet_length);
@@ -40,7 +42,7 @@ void ParsePcapPackets(pcap_parse::FileHeader& file_header, std::ifstream& file) 
     // Do something with the packet data
     // temporarily dumping it
     packet_header.PrintTimeStamp();
-    hexdump(packet_data, packet_length);
+    hexdump(packet_data, packet_data_size);
   }
 }
 
