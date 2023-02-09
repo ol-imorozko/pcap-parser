@@ -105,7 +105,7 @@ void hexdump(const uint8_t* data, size_t size) {
           std::cout << ".";
         }
       }
-      std::cout << std::dec << std::endl;
+      std::cout << std::dec << '\n';
     }
   }
 }
