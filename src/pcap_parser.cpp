@@ -5,6 +5,7 @@
 #include "include/base_parser.h"
 #include "include/l2_parser.h"
 #include "include/l3_parser.h"
+#include "include/l4_parser.h"
 #include "include/pcap_headers.h"
 
 template <class T>
@@ -67,6 +68,13 @@ void ParsePacket(std::ifstream& file,
 
     packet_parse::L3Parser l3p;
     next_proto = RunParserAndTrim(l3p, file, real_packet_length, next_proto,
+                                  bytes_to_trim);
+
+    if (real_packet_length == 0)
+      return;
+
+    packet_parse::L4Parser l4p;
+    next_proto = RunParserAndTrim(l4p, file, real_packet_length, next_proto,
                                   bytes_to_trim);
 
     if (real_packet_length == 0)
