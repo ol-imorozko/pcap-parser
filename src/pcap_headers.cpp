@@ -8,10 +8,6 @@
 
 namespace pcap_parse {
 
-std::string TimeFormatToString(TimeFormat tf) {
-  return tf == TimeFormat::kUSec ? "microseconds" : "nanoseconds";
-}
-
 bool FileValid(uint32_t magic_number) {
   return magic_number == kMagicMicrosecsBe ||
          magic_number == kMagicMicrosecsLe ||
@@ -56,8 +52,6 @@ FileHeader::FileHeader(RawFileHeader& raw_header) : cooked_header_(raw_header) {
 
   //Now our private header (cooked_header_) has correct endianness
   Transform(raw_header, endianness_);
-
-  lt_ = static_cast<LinkType>(cooked_header_.linktype);
 }
 
 PacketHeader::PacketHeader(RawPacketHeader& raw_header, FileHeader& file_header)
@@ -67,6 +61,10 @@ PacketHeader::PacketHeader(RawPacketHeader& raw_header, FileHeader& file_header)
 
   //Now our private header (cooked_header_) has correct endianness
   Transform(raw_header, file_header.GetEndianness());
+}
+
+std::string TimeFormatToString(TimeFormat tf) {
+  return tf == TimeFormat::kUSec ? "microseconds" : "nanoseconds";
 }
 
 void FileHeader::Print() const {
@@ -79,18 +77,7 @@ void FileHeader::Print() const {
   std::cout << "Snaplen: " << cooked_header_.snaplen << '\n';
   std::cout << "Linktype: " << cooked_header_.linktype << '\n';
   std::cout << "Using " << TimeFormatToString(tf_) << " timestamps\n";
-  std::cout << "*****************" << std::endl;
-}
-
-void PacketHeader::Print() const {
-  std::cout << "Pcap Packet Header\n";
-  std::cout << "-----------------\n";
-  std::cout << "Timestamp Seconds: " << cooked_header_.ts_sec << '\n';
-  std::cout << "Timestamp micro/nanoseconds: " << cooked_header_.ts_u_or_nsec
-            << '\n';
-  std::cout << "Number of octets: " << cooked_header_.incl_len << '\n';
-  std::cout << "Actual length: " << cooked_header_.orig_len << '\n';
-  std::cout << "-----------------" << std::endl;
+  std::cout << "*****************\n";
 }
 
 void PacketHeader::PrintTimeStamp() const {
@@ -112,12 +99,24 @@ void PacketHeader::PrintTimeStamp() const {
     auto ns = duration_cast<nanoseconds>(timePoint.time_since_epoch());
     auto fraction = ns.count() % 1000000000;
 
-    std::cout << "." << std::setfill('0') << std::setw(9) << fraction
-              << std::endl;
+    std::cout << "." << std::setfill('0') << std::setw(9) << fraction << '\n';
   } else {
     std::cout << "." << std::setfill('0') << std::setw(6)
-              << cooked_header_.ts_u_or_nsec << std::endl;
+              << cooked_header_.ts_u_or_nsec << '\n';
   }
+}
+
+void PacketHeader::Print() const {
+  std::cout << "Pcap Packet Header\n";
+  std::cout << "-----------------\n";
+  std::cout << "Timestamp Seconds: " << cooked_header_.ts_sec << '\n';
+  std::cout << "Timestamp micro/nanoseconds: " << cooked_header_.ts_u_or_nsec
+            << '\n';
+  std::cout << "Number of octets: " << cooked_header_.incl_len << '\n';
+  std::cout << "Actual length: " << cooked_header_.orig_len << '\n';
+  std::cout << "Human-readable time is ";
+  PrintTimeStamp();
+  std::cout << "-----------------\n";
 }
 
 }  // namespace pcap_parse

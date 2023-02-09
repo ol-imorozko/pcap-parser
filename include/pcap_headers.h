@@ -12,7 +12,6 @@ class FileHeader {
   RawFileHeader& cooked_header_;
   Endianness endianness_;
   TimeFormat tf_;
-  LinkType lt_;
 
  public:
   explicit FileHeader(RawFileHeader& raw_header);
@@ -21,7 +20,7 @@ class FileHeader {
 
   [[nodiscard]] TimeFormat GetTimeFormat() const { return tf_; }
 
-  [[nodiscard]] LinkType GetLinkType() const { return lt_; }
+  [[nodiscard]] uint32_t GetLinkType() const { return cooked_header_.linktype; }
 
   void Print() const;
 };
@@ -30,6 +29,7 @@ class PacketHeader {
  private:
   RawPacketHeader& cooked_header_;
   TimeFormat tf_;
+  void PrintTimeStamp() const;
 
  public:
   explicit PacketHeader(RawPacketHeader& raw_header, FileHeader& file_header);
@@ -43,7 +43,6 @@ class PacketHeader {
   }
 
   void Print() const;
-  void PrintTimeStamp() const;
 };
 
 }  // namespace pcap_parse

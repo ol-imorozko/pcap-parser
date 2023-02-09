@@ -8,11 +8,6 @@ constexpr uint32_t kMagicNanosecsBe = 0xA1B23C4D;
 constexpr uint32_t kMagicMicrosecsLe = 0xD4C3B2A1;
 constexpr uint32_t kMagicNanosecsLe = 0x4D3CB2A1;
 
-enum class LinkType {
-  kEtnernet = 1,
-  //TODO: add more linktypes?
-};
-
 enum class TimeFormat {
   kUSec,  // Microseconds
   KNSec,  // Nanoseconds
