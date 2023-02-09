@@ -1,7 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <functional>
-#include <string>
 
 #include "include/raw_pcap_headers.h"
 #include "include/transformer.h"
