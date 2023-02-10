@@ -17,8 +17,8 @@ void hexdump(const uint8_t* data, size_t size) {
     if (i % kBytesPerLine == 0)
       std::cerr << std::hex << std::setfill('0') << std::setw(8) << i << ": ";
 
-    std::cerr << std::hex << std::setfill('0') << std::setw(2) << int(data[i])
-              << " ";
+    std::cerr << std::hex << std::setfill('0') << std::setw(2)
+              << static_cast<int>(data[i]) << " ";
     if ((i + 1) % kBytesPerLine == 0 || i + 1 == size) {
       size_t j;
 
@@ -30,7 +30,7 @@ void hexdump(const uint8_t* data, size_t size) {
 
       for (j = i - (i % kBytesPerLine); j <= i; j++) {
         if (data[j] >= 32 && data[j] <= 126)
-          std::cerr << char(data[j]);
+          std::cerr << static_cast<char>(data[j]);
         else
           std::cerr << ".";
       }

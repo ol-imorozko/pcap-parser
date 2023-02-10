@@ -13,7 +13,7 @@ void PrintEthernetHeader(const EthernetHeader& header) {
 
   for (int i = 0; i < 6; i++) {
     std::cout << std::hex << std::setfill('0') << std::setw(2)
-              << (int)header.destination[i];
+              << static_cast<int>(header.destination[i]);
     if (i != 5)
       std::cout << ":";
   }
@@ -22,7 +22,7 @@ void PrintEthernetHeader(const EthernetHeader& header) {
 
   for (int i = 0; i < 6; i++) {
     std::cout << std::hex << std::setfill('0') << std::setw(2)
-              << (int)header.source[i];
+              << static_cast<int>(header.source[i]);
     if (i != 5)
       std::cout << ":";
   }

@@ -23,8 +23,8 @@ void PrintIpHeader(const IpHeader& header) {
             << '\n';
   std::cout << "  Fragment offset: "
             << (header.flags_and_fragment_offset & 0x1FFF) << '\n';
-  std::cout << " TTL: " << (int)header.ttl << '\n';
-  std::cout << " Protocol: " << (int)header.protocol << '\n';
+  std::cout << " TTL: " << static_cast<int>(header.ttl) << '\n';
+  std::cout << " Protocol: " << static_cast<int>(header.protocol) << '\n';
   std::cout << " Header checksum: 0x" << std::hex << std::setfill('0')
             << std::setw(4) << header.header_checksum << '\n';
 
