@@ -25,7 +25,7 @@ RawProto L4Parser::ParseUDP(std::ifstream& file, size_t& packet_size) {
 
   file.read(reinterpret_cast<char*>(&header), kUDPHeaderSize);
 
-  if (!file) {
+  if (file.eof()) {
     packet_size = 0;
     throw EoF("UDP", kUDPHeaderSize, file.gcount());
   }

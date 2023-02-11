@@ -39,7 +39,7 @@ RawProto L2Parser::ParseEthernet(std::ifstream& file, size_t& packet_size) {
 
   file.read(reinterpret_cast<char*>(&header), kEthernetHeaderSize);
 
-  if (!file) {
+  if (file.eof()) {
     packet_size = 0;
     throw EoF("Ethernet", kEthernetHeaderSize, file.gcount());
   }

@@ -9,7 +9,7 @@ namespace packet_parse {
 
 constexpr int kBytesPerLine = 16;
 
-void hexdump(const uint8_t* data, size_t size) {
+void Hexdump(const uint8_t* data, size_t size) {
   size_t i;
 
   for (i = 0; i < size; i++) {
@@ -43,7 +43,7 @@ void hexdump(const uint8_t* data, size_t size) {
 void HexdumpBytes(std::ifstream& file, size_t size) {
   uint8_t packet_data[size];
   file.read(reinterpret_cast<char*>(packet_data), static_cast<long>(size));
-  hexdump(packet_data, file.gcount());
+  Hexdump(packet_data, file.gcount());
 }
 
 void TrimBytes(std::ifstream& file, size_t size) {

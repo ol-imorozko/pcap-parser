@@ -14,8 +14,16 @@ bool FileValid(uint32_t magic_number) {
          magic_number == kMagicNanosecsBe || magic_number == kMagicNanosecsLe;
 }
 
-void Transform(RawFileHeader& raw_header, Endianness endianness) {
-  SingletonTransformer* t = SingletonTransformer::GetInstance(endianness);
+class FileInvalid : public std::exception {
+ public:
+  const char* what() const noexcept override {
+    return "Provided file is not a PCAP file";
+  };
+};
+
+void Transform(RawFileHeader& raw_header, bool should_swap_bytes) {
+  SingletonTransformer* t =
+      SingletonTransformer::GetInstance(should_swap_bytes);
 
   raw_header.magic_number = t->ReadU32(raw_header.magic_number);
   raw_header.version_major = t->ReadU16(raw_header.version_major);
@@ -24,8 +32,9 @@ void Transform(RawFileHeader& raw_header, Endianness endianness) {
   raw_header.linktype = t->ReadU32(raw_header.linktype);
 }
 
-void Transform(RawPacketHeader& raw_header, Endianness endianness) {
-  SingletonTransformer* t = SingletonTransformer::GetInstance(endianness);
+void Transform(RawPacketHeader& raw_header, bool should_swap_bytes) {
+  SingletonTransformer* t =
+      SingletonTransformer::GetInstance(should_swap_bytes);
 
   raw_header.ts_sec = t->ReadU32(raw_header.ts_sec);
   raw_header.ts_u_or_nsec = t->ReadU32(raw_header.ts_u_or_nsec);
@@ -36,13 +45,13 @@ void Transform(RawPacketHeader& raw_header, Endianness endianness) {
 FileHeader::FileHeader(RawFileHeader& raw_header) : cooked_header_(raw_header) {
 
   if (!FileValid(raw_header.magic_number))
-    throw std::exception();
+    throw FileInvalid();
 
   if (raw_header.magic_number == kMagicMicrosecsBe ||
       raw_header.magic_number == kMagicNanosecsBe)
-    endianness_ = Endianness::kSameEndian;
+    should_swap_bytes_ = false;
   else
-    endianness_ = Endianness::kDiffEndian;
+    should_swap_bytes_ = true;
 
   if (raw_header.magic_number == kMagicMicrosecsBe ||
       raw_header.magic_number == kMagicMicrosecsLe)
@@ -50,8 +59,8 @@ FileHeader::FileHeader(RawFileHeader& raw_header) : cooked_header_(raw_header) {
   else
     tf_ = TimeFormat::KNSec;
 
-  //Now our private header (cooked_header_) has correct endianness
-  Transform(raw_header, endianness_);
+  //Now our private header (cooked_header_) has correct fields
+  Transform(raw_header, should_swap_bytes_);
 }
 
 PacketHeader::PacketHeader(RawPacketHeader& raw_header, FileHeader& file_header)
@@ -59,8 +68,8 @@ PacketHeader::PacketHeader(RawPacketHeader& raw_header, FileHeader& file_header)
 
   tf_ = file_header.GetTimeFormat();
 
-  //Now our private header (cooked_header_) has correct endianness
-  Transform(raw_header, file_header.GetEndianness());
+  //Now our private header (cooked_header_) has correct fields
+  Transform(raw_header, file_header.ShouldSwapBytes());
 }
 
 std::string TimeFormatToString(TimeFormat tf) {

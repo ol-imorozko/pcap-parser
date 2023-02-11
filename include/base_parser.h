@@ -12,20 +12,18 @@ namespace packet_parse {
 // is better to cast such types to uint64_t.
 using RawProto = uint64_t;
 
-// All parsers should implement such function.
-//
-// @p file -- Stream with the data. Parsers could read from it, but
-// SHOULD NOT read more than the size of a corresponding protocol header.
-// It is guaranteed that the first bytes in a @file are gonna be a bytes
-// of the header.
-//
-// @p packet_size -- Size of a whole packet. Parsers should decrease
-// this value when they finish the parsing.
-//
-// @p proto -- Raw protocol. It is advized to cast this to the
-// internal enum with the protocols for the particullar layer.
 class BaseParser {
  public:
+  // All parsers should implement such function.
+  //
+  // @p file -- Stream with the data. Parsers could read from it, but
+  // MUST NOT read more than the size of a corresponding protocol header.
+  //
+  // @p packet_size -- Size of a whole packet. Parsers should decrease
+  // this value when they finish the parsing.
+  //
+  // @p proto -- Raw protocol. It is advized to cast this to the
+  // internal enum with the protocols for the particular layer.
   virtual RawProto Parse(std::ifstream& file, size_t& packet_size,
                          RawProto raw_proto) = 0;
 };

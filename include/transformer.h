@@ -3,29 +3,24 @@
 
 namespace pcap_parse {
 
-enum class Endianness {
-  kSameEndian,
-  kDiffEndian,
-};
-
 class SingletonTransformer {
  private:
-  Endianness endianness_;
+  bool should_swap_bytes_;
   static SingletonTransformer* singleton_;
 
-  explicit SingletonTransformer(Endianness endianness)
-      : endianness_(endianness) {}
+  explicit SingletonTransformer(bool should_swap_bytes)
+      : should_swap_bytes_(should_swap_bytes) {}
 
  public:
   SingletonTransformer(SingletonTransformer& other) = delete;
 
   void operator=(const SingletonTransformer&) = delete;
 
-  static SingletonTransformer* GetInstance(Endianness endianness);
+  static SingletonTransformer* GetInstance(bool should_swap_bytes);
 
-  uint32_t ReadU32(uint32_t data);
+  uint32_t ReadU32(uint32_t data) const;
 
-  uint16_t ReadU16(uint16_t data);
+  uint16_t ReadU16(uint16_t data) const;
 };
 
 }  // namespace pcap_parse

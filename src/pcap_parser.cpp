@@ -15,25 +15,25 @@ T ReadRawHeader(std::ifstream& file) {
   return raw_header;
 }
 
-//Usually Original Packet Length is equal to the Captured Packet Length.
+// Usually Original Packet Length is equal to the Captured Packet Length.
 //
-//In rare cases the original packet length could be greater then the
-//captured one, cause the reciever could say "I want to capture bytes till
-//the 100'th byte" (this indicates by the SnapLen field in file header),
-//and if the original packet length was greater than 100, it will be
-//stripped.
+// In rare cases the original packet length could be greater than the
+// captured one, because the reciever could say "I want to capture bytes till
+// the 100'th byte" (this is indicated by by the SnapLen field in file header),
+// and if the original packet length was greater than 100, it will be
+// stripped.
 //
-//The situation where original lesser than captured shouldn't be possible:
-//From PCAP specification:
-//Captured Packet Length:
-// - It will be the minimum value among the Original Packet Length and the
-//   snapshot length for the interface (SnapLen, defined in Figure 1).
+// The situation where the original packet length is lesser than the captured one
+// shouldn't be possible. From PCAP specification:
+// Captured Packet Length:
+//  - It will be the minimum value among the Original Packet Length and the
+//    snapshot length for the interface (SnapLen, defined in Figure 1).
 //
-//However, one could find a pcap file where this is not the case:
-//https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dvb-ci_2.pcap
+// However, one could find a pcap file where this is not the case:
+// https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dvb-ci_2.pcap
 //
-//In this case, we need to advance the position in the file by the number
-//of remaining bytes.
+// In this case, we need to advance the position in the file by the number
+// of remaining bytes.
 packet_parse::RawProto RunParserAndTrim(packet_parse::BaseParser& parser,
                                         std::ifstream& file, size_t& len,
                                         packet_parse::RawProto proto,
@@ -47,8 +47,8 @@ packet_parse::RawProto RunParserAndTrim(packet_parse::BaseParser& parser,
   return next_proto;
 }
 
-bool ApplyAllParsers(std::ifstream& file, size_t& len, uint32_t initial_proto,
-                     size_t bytes_to_trim) {
+bool RunAllParsers(std::ifstream& file, size_t& len, uint32_t initial_proto,
+                   size_t bytes_to_trim) {
 
   auto next_proto = static_cast<packet_parse::RawProto>(initial_proto);
 
@@ -74,7 +74,8 @@ bool ApplyAllParsers(std::ifstream& file, size_t& len, uint32_t initial_proto,
 }
 
 void ParsePacket(std::ifstream& file,
-                 pcap_parse::PacketHeader pcap_packet_header,
+                 const pcap_parse::PacketHeader&
+                     pcap_packet_header,  //TODO: do this everywhere?
                  uint32_t initial_proto) {
   size_t len = pcap_packet_header.GetRealPacketLength();
   size_t captured = pcap_packet_header.GetCapturedPacketLength();
@@ -83,7 +84,7 @@ void ParsePacket(std::ifstream& file,
   if (captured > len)
     bytes_to_trim = captured - len;
 
-  if (!ApplyAllParsers(file, len, initial_proto, bytes_to_trim)) {
+  if (!RunAllParsers(file, len, initial_proto, bytes_to_trim)) {
     std::cerr << "Parsing ended but " << len << " bytes left:\n";
     packet_parse::HexdumpBytes(file, len);
     packet_parse::TrimBytes(file, bytes_to_trim);
@@ -99,7 +100,6 @@ void ParsePcapPackets(pcap_parse::FileHeader& file_header,
     // Read raw PCAP packet header
     auto raw_packet_header = ReadRawHeader<pcap_parse::RawPacketHeader>(file);
 
-    // Check if it's the end of file
     if (file.eof())
       break;
 
@@ -113,13 +113,11 @@ void ParsePcapPackets(pcap_parse::FileHeader& file_header,
 }
 
 int main(int argc, char* argv[]) {
-  // Check if the file name is provided
   if (argc != 2) {
     std::cerr << "Usage: pcap_parser <file_name>" << std::endl;
     return 0;
   }
 
-  // Open the file
   std::ifstream file(argv[1], std::ios::in | std::ios::binary);
   if (!file) {
     std::cerr << "Failed to open the file" << std::endl;
@@ -138,10 +136,9 @@ int main(int argc, char* argv[]) {
     pcap_parse::FileHeader file_header(raw_file_header);
     ParsePcapPackets(file_header, file);
   } catch (const std::exception& e) {
-    std::cerr << argv[1] << " is not a PCAP file" << std::endl;
+    std::cerr << e.what() << std::endl;
   }
 
-  // Close the file
   file.close();
 
   return 0;

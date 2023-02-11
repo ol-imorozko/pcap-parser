@@ -10,13 +10,13 @@ namespace pcap_parse {
 class FileHeader {
  private:
   RawFileHeader& cooked_header_;
-  Endianness endianness_;
+  bool should_swap_bytes_;
   TimeFormat tf_;
 
  public:
   explicit FileHeader(RawFileHeader& raw_header);
 
-  [[nodiscard]] Endianness GetEndianness() const { return endianness_; }
+  [[nodiscard]] bool ShouldSwapBytes() const { return should_swap_bytes_; }
 
   [[nodiscard]] TimeFormat GetTimeFormat() const { return tf_; }
 
