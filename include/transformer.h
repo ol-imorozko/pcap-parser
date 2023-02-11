@@ -3,20 +3,15 @@
 
 namespace pcap_parse {
 
-class SingletonTransformer {
+class Transformer {
  private:
-  bool should_swap_bytes_;
-  static SingletonTransformer* singleton_;
-
-  explicit SingletonTransformer(bool should_swap_bytes)
-      : should_swap_bytes_(should_swap_bytes) {}
+  bool should_swap_bytes_{};
 
  public:
-  SingletonTransformer(SingletonTransformer& other) = delete;
+  explicit Transformer(bool should_swap_bytes)
+      : should_swap_bytes_(should_swap_bytes) {}
 
-  void operator=(const SingletonTransformer&) = delete;
-
-  static SingletonTransformer* GetInstance(bool should_swap_bytes);
+  Transformer() = default;
 
   uint32_t ReadU32(uint32_t data) const;
 

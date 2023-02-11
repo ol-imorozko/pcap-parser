@@ -21,25 +21,19 @@ class FileInvalid : public std::exception {
   };
 };
 
-void Transform(RawFileHeader& header, bool should_swap_bytes) {
-  SingletonTransformer* t =
-      SingletonTransformer::GetInstance(should_swap_bytes);
-
-  header.magic_number = t->ReadU32(header.magic_number);
-  header.version_major = t->ReadU16(header.version_major);
-  header.version_minor = t->ReadU16(header.version_minor);
-  header.snaplen = t->ReadU32(header.snaplen);
-  header.linktype = t->ReadU32(header.linktype);
+void Transform(RawFileHeader& header, const Transformer& t) {
+  header.magic_number = t.ReadU32(header.magic_number);
+  header.version_major = t.ReadU16(header.version_major);
+  header.version_minor = t.ReadU16(header.version_minor);
+  header.snaplen = t.ReadU32(header.snaplen);
+  header.linktype = t.ReadU32(header.linktype);
 }
 
-void Transform(RawPacketHeader& header, bool should_swap_bytes) {
-  SingletonTransformer* t =
-      SingletonTransformer::GetInstance(should_swap_bytes);
-
-  header.ts_sec = t->ReadU32(header.ts_sec);
-  header.ts_u_or_nsec = t->ReadU32(header.ts_u_or_nsec);
-  header.incl_len = t->ReadU32(header.incl_len);
-  header.orig_len = t->ReadU32(header.orig_len);
+void Transform(RawPacketHeader& header, const Transformer& t) {
+  header.ts_sec = t.ReadU32(header.ts_sec);
+  header.ts_u_or_nsec = t.ReadU32(header.ts_u_or_nsec);
+  header.incl_len = t.ReadU32(header.incl_len);
+  header.orig_len = t.ReadU32(header.orig_len);
 }
 
 FileHeader::FileHeader(const RawFileHeader& raw_header)
@@ -48,11 +42,14 @@ FileHeader::FileHeader(const RawFileHeader& raw_header)
   if (!FileValid(cooked_header_.magic_number))
     throw FileInvalid();
 
+  bool should_swap_bytes;
   if (cooked_header_.magic_number == kMagicMicrosecsBe ||
       cooked_header_.magic_number == kMagicNanosecsBe)
-    should_swap_bytes_ = false;
+    should_swap_bytes = false;
   else
-    should_swap_bytes_ = true;
+    should_swap_bytes = true;
+
+  transformer_ = Transformer(should_swap_bytes);
 
   if (cooked_header_.magic_number == kMagicMicrosecsBe ||
       cooked_header_.magic_number == kMagicMicrosecsLe)
@@ -60,7 +57,7 @@ FileHeader::FileHeader(const RawFileHeader& raw_header)
   else
     tf_ = TimeFormat::KNSec;
 
-  Transform(cooked_header_, should_swap_bytes_);
+  Transform(cooked_header_, transformer_);
 }
 
 PacketHeader::PacketHeader(const RawPacketHeader& raw_header,
@@ -69,7 +66,7 @@ PacketHeader::PacketHeader(const RawPacketHeader& raw_header,
 
   tf_ = file_header.GetTimeFormat();
 
-  Transform(cooked_header_, file_header.ShouldSwapBytes());
+  Transform(cooked_header_, file_header.GetTransformer());
 }
 
 std::string TimeFormatToString(TimeFormat tf) {
