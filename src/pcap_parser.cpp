@@ -8,6 +8,7 @@
 #include "include/l3_parser.h"
 #include "include/l4_parser.h"
 #include "include/pcap_headers.h"
+#include "include/spectra_simba_l1_parser.h"
 
 template <class T>
 T ReadRawHeader(packet_parse::Stream& data) {
@@ -72,6 +73,12 @@ bool RunAllParsers(packet_parse::Stream& packet, std::streamsize& len,
   packet_parse::L4Parser l4p;
   next_data =
       RunParserAndTrim(l4p, packet, len, std::move(next_data), bytes_to_trim);
+
+  if (len == 0)
+    return true;
+
+  packet_parse::spectra_simba::L1Parser ss_l1p;
+  next_proto = RunParserAndTrim(ss_l1p, file, len, next_proto, bytes_to_trim);
 
   if (len == 0)
     return true;

@@ -1,10 +1,10 @@
 TARGET   = pcap-parser
 
 CC       = g++
-CFLAGS   = -Wall -Wextra -I. -std=c++17
+CFLAGS   = -Wall -Wextra -I. -std=c++20
 
 LINKER   = g++
-LFLAGS   = -Wall -I. -std=c++17
+LFLAGS   = -Wall -I. -std=c++20
 
 SRCDIR   = src
 INCDIR   = include
