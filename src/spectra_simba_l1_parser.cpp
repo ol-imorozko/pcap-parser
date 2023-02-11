@@ -10,7 +10,17 @@ namespace packet_parse::spectra_simba {
 RawProto L1Parser::Parse(std::ifstream& file, std::streamsize& packet_size,
                          [[maybe_unused]] RawProto raw_proto) const {
   MarketDataPacket p;
+#ifdef FIXME_SKIP_FRAGMENTED_PACKETS
+  RawProto next_proto = p.Parse(file, packet_size);
+  if (p.IsFragment()) {
+    std::cout << "This packet is a fragment, skip it for now\n";
+    throw UnknownProto(0xDEADBEEF);
+  }
+
+  return next_proto;
+#else
   return p.Parse(file, packet_size);
+#endif
 }
 
 void MarketDataPacket::Operation(const MarketDataPacketHeader& header) {

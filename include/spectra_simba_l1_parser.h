@@ -6,6 +6,8 @@
 
 #include "include/base_parser.h"
 
+#define FIXME_SKIP_FRAGMENTED_PACKETS 1
+
 namespace packet_parse::spectra_simba {
 
 class L1Parser : public BaseParser {
@@ -47,6 +49,14 @@ class MarketDataPacket
   }
 
   void Operation(const MarketDataPacketHeader& header) override;
+
+#ifdef FIXME_SKIP_FRAGMENTED_PACKETS
+ public:
+  bool IsFragment() {
+    return ((flags_[3] && !flags_[0]) ||
+            (!flags_[3] && !(flags_[1] && flags_[2])));
+  }
+#endif
 };
 
 }  // namespace packet_parse::spectra_simba
