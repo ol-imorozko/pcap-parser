@@ -44,14 +44,14 @@ void PrintIpHeader(const IpHeader& header) {
 RawProto L3Parser::ParseIp(std::ifstream& file, std::streamsize& packet_size) {
   IpHeader header{};
 
-  if (packet_size < kIpHeaderSize)
-    throw NotEnoughData("Ip", kIpHeaderSize, packet_size);
+  if (packet_size < IpHeader::size)
+    throw NotEnoughData("Ip", IpHeader::size, packet_size);
 
-  file.read(reinterpret_cast<char*>(&header), kIpHeaderSize);
+  file.read(reinterpret_cast<char*>(&header), IpHeader::size);
 
   if (file.eof()) {
     packet_size = 0;
-    throw EoF("Ip", kIpHeaderSize, file.gcount());
+    throw EoF("Ip", IpHeader::size, file.gcount());
   }
 
   // Cause the data comes in a network byte order
@@ -65,7 +65,7 @@ RawProto L3Parser::ParseIp(std::ifstream& file, std::streamsize& packet_size) {
 
   PrintIpHeader(header);
 
-  packet_size -= kIpHeaderSize;
+  packet_size -= IpHeader::size;
   return static_cast<RawProto>(header.protocol);
 }
 

@@ -20,14 +20,14 @@ void PrintUDPHeader(const UDPHeader& header) {
 RawProto L4Parser::ParseUDP(std::ifstream& file, std::streamsize& packet_size) {
   UDPHeader header{};
 
-  if (packet_size < kUDPHeaderSize)
-    throw NotEnoughData("UDP", kUDPHeaderSize, packet_size);
+  if (packet_size < UDPHeader::size)
+    throw NotEnoughData("UDP", UDPHeader::size, packet_size);
 
-  file.read(reinterpret_cast<char*>(&header), kUDPHeaderSize);
+  file.read(reinterpret_cast<char*>(&header), UDPHeader::size);
 
   if (file.eof()) {
     packet_size = 0;
-    throw EoF("UDP", kUDPHeaderSize, file.gcount());
+    throw EoF("UDP", UDPHeader::size, file.gcount());
   }
 
   // Cause the data comes in a network byte order
@@ -38,7 +38,7 @@ RawProto L4Parser::ParseUDP(std::ifstream& file, std::streamsize& packet_size) {
 
   PrintUDPHeader(header);
 
-  packet_size -= kUDPHeaderSize;
+  packet_size -= UDPHeader::size;
   return 0;
 }
 
@@ -57,14 +57,14 @@ RawProto L4Parser::ParseICMP(std::ifstream& file,
                              std::streamsize& packet_size) {
   ICMPHeader header{};
 
-  if (packet_size < kICMPHeaderSize)
-    throw NotEnoughData("ICMP", kICMPHeaderSize, packet_size);
+  if (packet_size < ICMPHeader::size)
+    throw NotEnoughData("ICMP", ICMPHeader::size, packet_size);
 
-  file.read(reinterpret_cast<char*>(&header), kICMPHeaderSize);
+  file.read(reinterpret_cast<char*>(&header), ICMPHeader::size);
 
   if (!file) {
     packet_size = 0;
-    throw EoF("ICMP", kICMPHeaderSize, file.gcount());
+    throw EoF("ICMP", ICMPHeader::size, file.gcount());
   }
 
   // Cause the data comes in a network byte order
@@ -74,7 +74,7 @@ RawProto L4Parser::ParseICMP(std::ifstream& file,
 
   PrintICMPHeader(header);
 
-  packet_size -= kICMPHeaderSize;
+  packet_size -= ICMPHeader::size;
   return 0;
 }
 

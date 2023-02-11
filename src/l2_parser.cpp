@@ -35,14 +35,15 @@ RawProto L2Parser::ParseEthernet(std::ifstream& file,
                                  std::streamsize& packet_size) {
   EthernetHeader header{};
 
-  if (packet_size < kEthernetHeaderSize)
-    throw NotEnoughData("Ethernet", kEthernetHeaderSize, packet_size);
+  if (packet_size < EthernetHeader::size)
+    throw NotEnoughData("Ethernet", EthernetHeader::size, packet_size);
 
-  file.read(reinterpret_cast<char*>(&header), kEthernetHeaderSize);
+  file.read(reinterpret_cast<char*>(&header), EthernetHeader::size);
+  /* file.read(reinterpret_cast<char*>(&header), 20); */
 
   if (file.eof()) {
     packet_size = 0;
-    throw EoF("Ethernet", kEthernetHeaderSize, file.gcount());
+    throw EoF("Ethernet", EthernetHeader::size, file.gcount());
   }
 
   // Cause the data comes in a network byte order
@@ -50,7 +51,7 @@ RawProto L2Parser::ParseEthernet(std::ifstream& file,
 
   PrintEthernetHeader(header);
 
-  packet_size -= kEthernetHeaderSize;
+  packet_size -= EthernetHeader::size;
   return static_cast<RawProto>(header.ethertype);
 }
 

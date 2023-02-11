@@ -19,15 +19,13 @@ class L4Parser : public BaseParser {
                  RawProto raw_proto) override;
 };
 
-constexpr int kUDPHeaderSize = 8;
-constexpr int kICMPHeaderSize = 8;
-
 #pragma pack(push, 1)
 struct UDPHeader {
   uint16_t source_port;
   uint16_t destination_port;
   uint16_t length;
   uint16_t checksum;
+  static const std::streamsize size = 8;
 };
 
 struct ICMPHeader {
@@ -36,6 +34,7 @@ struct ICMPHeader {
   uint16_t checksum;
   uint16_t identifier;
   uint16_t sequence_number;
+  static const std::streamsize size = 8;
 };
 #pragma pack(pop)
 
