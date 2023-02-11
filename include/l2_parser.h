@@ -38,28 +38,7 @@ class Ethernet : public Protocol<EthernetHeader, EthernetHeader::name> {
     return static_cast<RawProto>(header.ethertype);
   }
 
-  void Operation(const EthernetHeader& header) override {
-    std::cout << "Ethernet header:\n  Destination: ";
-
-    for (int i = 0; i < 6; i++) {
-      std::cout << std::hex << std::setfill('0') << std::setw(2)
-                << static_cast<int>(header.destination[i]);
-      if (i != 5)
-        std::cout << ":";
-    }
-
-    std::cout << "\n  Source: ";
-
-    for (int i = 0; i < 6; i++) {
-      std::cout << std::hex << std::setfill('0') << std::setw(2)
-                << static_cast<int>(header.source[i]);
-      if (i != 5)
-        std::cout << ":";
-    }
-
-    std::cout << "\n  EtherType: 0x" << std::hex << std::setfill('0')
-              << std::setw(4) << header.ethertype << std::dec << '\n';
-  }
+  void Operation(const EthernetHeader& header) override;
 };
 
 }  // namespace packet_parse
