@@ -1,6 +1,8 @@
 #pragma once
+#include <exception>
 #include <fstream>
 #include <ios>
+#include <utility>
 
 namespace packet_parse {
 
@@ -8,29 +10,6 @@ namespace packet_parse {
 // data types, so in order to create a unified interface it
 // is better to cast such types to uint64_t.
 using RawProto = uint64_t;
-
-class BaseParser {
- public:
-  // All parsers should implement such function.
-  //
-  // @p file -- Stream with the data. Parsers could read from it, but
-  // MUST NOT read more than the size of a corresponding protocol header.
-  //
-  // @p packet_size -- Size of a whole packet. Parsers should decrease
-  // this value when they finish the parsing.
-  //
-  // @p proto -- Raw protocol. It is advized to cast this to the
-  // internal enum with the protocols for the particular layer.
-  virtual RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
-                         RawProto raw_proto) const = 0;
-};
-
-void HexdumpBytes(std::ifstream& file, std::streamsize n);
-
-void TrimBytes(std::ifstream& file, std::streamsize n);
-
-RawProto HandleParser(const BaseParser& p, std::ifstream& file,
-                      std::streamsize& packet_size, RawProto curr_proto);
 
 class UnknownProto : public std::exception {
  private:
@@ -64,4 +43,66 @@ class EoF : public std::exception {
   const char* what() const noexcept override { return msg.c_str(); };
 };
 
+class BaseParser {
+ public:
+  virtual RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
+                         RawProto raw_proto) const = 0;
+};
+
+// Parametrized by a packed structure with protocol header definition and
+// the protocol name
+template <class Header, char const* name>
+class Protocol {
+ private:
+  std::streamsize header_size_;
+  std::string name_;
+
+  Header GetHeader(std::ifstream& file, std::streamsize& packet_size);
+
+  virtual void Transform([[maybe_unused]] Header& header){};
+
+  virtual RawProto GetNextProto([[maybe_unused]] const Header& header) {
+    return 0;
+  };
+
+  virtual void Operation([[maybe_unused]] const Header& header){};
+
+ public:
+  Protocol() : header_size_(sizeof(Header)), name_(name){};
+
+  // Template Method pattern
+  RawProto Parse(std::ifstream& file, std::streamsize& packet_size) {
+    Header header = GetHeader(file, packet_size);
+    Transform(header);
+    Operation(header);
+    return GetNextProto(header);
+  }
+};
+
+template <class Header, char const* name>
+Header Protocol<Header, name>::GetHeader(std::ifstream& file,
+                                         std::streamsize& packet_size) {
+  Header header{};
+
+  if (packet_size < header_size_)
+    throw NotEnoughData(name_, header_size_, packet_size);
+
+  file.read(reinterpret_cast<char*>(&header), header_size_);
+
+  if (file.eof()) {
+    packet_size = 0;
+    throw EoF(name_, header_size_, file.gcount());
+  }
+
+  packet_size -= header_size_;
+
+  return header;
+}
+
+void HexdumpBytes(std::ifstream& file, std::streamsize n);
+
+void TrimBytes(std::ifstream& file, std::streamsize n);
+
+RawProto HandleParser(const BaseParser& p, std::ifstream& file,
+                      std::streamsize& packet_size, RawProto curr_proto);
 }  // namespace packet_parse
