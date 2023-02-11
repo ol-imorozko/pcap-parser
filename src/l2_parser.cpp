@@ -56,7 +56,7 @@ RawProto L2Parser::ParseEthernet(std::ifstream& file,
 }
 
 RawProto L2Parser::Parse(std::ifstream& file, std::streamsize& packet_size,
-                         RawProto raw_proto) {
+                         RawProto raw_proto) const {
   auto proto = static_cast<Proto>(raw_proto);
 
   switch (proto) {

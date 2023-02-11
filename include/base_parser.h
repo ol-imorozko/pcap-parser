@@ -22,14 +22,14 @@ class BaseParser {
   // @p proto -- Raw protocol. It is advized to cast this to the
   // internal enum with the protocols for the particular layer.
   virtual RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
-                         RawProto raw_proto) = 0;
+                         RawProto raw_proto) const = 0;
 };
 
 void HexdumpBytes(std::ifstream& file, std::streamsize n);
 
 void TrimBytes(std::ifstream& file, std::streamsize n);
 
-RawProto HandleParser(BaseParser& p, std::ifstream& file,
+RawProto HandleParser(const BaseParser& p, std::ifstream& file,
                       std::streamsize& packet_size, RawProto curr_proto);
 
 class UnknownProto : public std::exception {

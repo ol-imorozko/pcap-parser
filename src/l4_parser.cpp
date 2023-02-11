@@ -79,7 +79,7 @@ RawProto L4Parser::ParseICMP(std::ifstream& file,
 }
 
 RawProto L4Parser::Parse(std::ifstream& file, std::streamsize& packet_size,
-                         RawProto raw_proto) {
+                         RawProto raw_proto) const {
   auto proto = static_cast<Proto>(raw_proto);
 
   switch (proto) {

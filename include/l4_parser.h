@@ -16,7 +16,7 @@ class L4Parser : public BaseParser {
 
  public:
   RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
-                 RawProto raw_proto) override;
+                 RawProto raw_proto) const override;
 };
 
 #pragma pack(push, 1)

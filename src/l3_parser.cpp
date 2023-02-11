@@ -70,7 +70,7 @@ RawProto L3Parser::ParseIp(std::ifstream& file, std::streamsize& packet_size) {
 }
 
 RawProto L3Parser::Parse(std::ifstream& file, std::streamsize& packet_size,
-                         RawProto raw_proto) {
+                         RawProto raw_proto) const {
   auto proto = static_cast<Proto>(raw_proto);
 
   switch (proto) {

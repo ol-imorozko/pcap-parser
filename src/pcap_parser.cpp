@@ -34,7 +34,7 @@ T ReadRawHeader(std::ifstream& file) {
 //
 // In this case, we need to advance the position in the file by the number
 // of remaining bytes.
-packet_parse::RawProto RunParserAndTrim(packet_parse::BaseParser& parser,
+packet_parse::RawProto RunParserAndTrim(const packet_parse::BaseParser& parser,
                                         std::ifstream& file,
                                         std::streamsize& len,
                                         packet_parse::RawProto proto,
@@ -75,8 +75,7 @@ bool RunAllParsers(std::ifstream& file, std::streamsize& len,
 }
 
 void ParsePacket(std::ifstream& file,
-                 const pcap_parse::PacketHeader&
-                     pcap_packet_header,  //TODO: do this everywhere?
+                 const pcap_parse::PacketHeader& pcap_packet_header,
                  uint32_t initial_proto) {
   size_t len = pcap_packet_header.GetRealPacketLength();
   size_t captured = pcap_packet_header.GetCapturedPacketLength();
@@ -94,8 +93,8 @@ void ParsePacket(std::ifstream& file,
   }
 }
 
-void ParsePcapPackets(pcap_parse::FileHeader& file_header,
-                      std::ifstream& file) {
+void ParsePcapPackets(std::ifstream& file,
+                      const pcap_parse::FileHeader& file_header) {
   file_header.Print();
 
   // Read PCAP packets
@@ -137,7 +136,7 @@ int main(int argc, char* argv[]) {
   // Get normal PCAP file header and parse packets
   try {
     pcap_parse::FileHeader file_header(raw_file_header);
-    ParsePcapPackets(file_header, file);
+    ParsePcapPackets(file, file_header);
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
   }
