@@ -9,12 +9,12 @@ namespace pcap_parse {
 
 class FileHeader {
  private:
-  RawFileHeader& cooked_header_;
+  RawFileHeader cooked_header_;
   bool should_swap_bytes_;
   TimeFormat tf_;
 
  public:
-  explicit FileHeader(RawFileHeader& raw_header);
+  explicit FileHeader(const RawFileHeader& raw_header);
 
   [[nodiscard]] bool ShouldSwapBytes() const { return should_swap_bytes_; }
 
@@ -27,12 +27,13 @@ class FileHeader {
 
 class PacketHeader {
  private:
-  RawPacketHeader& cooked_header_;
+  RawPacketHeader cooked_header_;
   TimeFormat tf_;
   void PrintTimeStamp() const;
 
  public:
-  explicit PacketHeader(RawPacketHeader& raw_header, FileHeader& file_header);
+  explicit PacketHeader(const RawPacketHeader& raw_header,
+                        const FileHeader& file_header);
 
   [[nodiscard]] size_t GetRealPacketLength() const {
     return std::min(cooked_header_.incl_len, cooked_header_.orig_len);
