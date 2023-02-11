@@ -1,49 +1,49 @@
 #include <cstdio>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include "include/base_parser.h"
 
 namespace packet_parse {
 
-constexpr int kBytesPerLine = 16;
-
 void Hexdump(const uint8_t* data, size_t size) {
-  size_t i;
+  int kBytesPerLine = 16;
 
-  for (i = 0; i < size; i++) {
+  for (size_t i = 0; i < size; i++) {
 
     if (i % kBytesPerLine == 0)
-      std::cerr << std::hex << std::setfill('0') << std::setw(8) << i << ": ";
+      std::cout << std::hex << std::setfill('0') << std::setw(8) << i << ": ";
 
-    std::cerr << std::hex << std::setfill('0') << std::setw(2)
+    std::cout << std::hex << std::setfill('0') << std::setw(2)
               << static_cast<int>(data[i]) << " ";
     if ((i + 1) % kBytesPerLine == 0 || i + 1 == size) {
       size_t j;
 
       for (j = 0; j < kBytesPerLine - (i % kBytesPerLine) - 1; j++)
-        std::cerr << "   ";
+        std::cout << "   ";
 
       if ((i + 1) % kBytesPerLine != 0)
-        std::cerr << " ";
+        std::cout << " ";
 
       for (j = i - (i % kBytesPerLine); j <= i; j++) {
         if (data[j] >= 32 && data[j] <= 126)
-          std::cerr << static_cast<char>(data[j]);
+          std::cout << static_cast<char>(data[j]);
         else
-          std::cerr << ".";
+          std::cout << ".";
       }
-      std::cerr << std::dec << '\n';
+      std::cout << std::dec << '\n';
     }
   }
-  std::cerr << std::dec;
+  std::cout << std::dec;
 }
 
 void HexdumpBytes(std::ifstream& file, std::streamsize n) {
-  uint8_t packet_data[n];
-  file.read(reinterpret_cast<char*>(packet_data), n);
-  Hexdump(packet_data, file.gcount());
+  auto packet_data = std::make_unique<uint8_t[]>(n);
+  file.read(reinterpret_cast<char*>(packet_data.get()), n);
+  Hexdump(packet_data.get(), file.gcount());
 }
 
 void TrimBytes(std::ifstream& file, std::streamsize n) {
