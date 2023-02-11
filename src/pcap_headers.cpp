@@ -89,20 +89,20 @@ void FileHeader::Print() const {
 void PacketHeader::PrintTimeStamp() const {
   using namespace std::chrono;
 
-  auto timePoint = system_clock::from_time_t(cooked_header_.ts_sec);
+  auto time_point = system_clock::from_time_t(cooked_header_.ts_sec);
 
   if (tf_ == TimeFormat::KNSec)
-    timePoint += nanoseconds(cooked_header_.ts_u_or_nsec);
+    time_point += nanoseconds(cooked_header_.ts_u_or_nsec);
   else
-    timePoint += microseconds(cooked_header_.ts_u_or_nsec);
+    time_point += microseconds(cooked_header_.ts_u_or_nsec);
 
-  auto t = system_clock::to_time_t(timePoint);
+  auto t = system_clock::to_time_t(time_point);
   std::tm tm = *std::localtime(&t);
 
   std::cout << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
 
   if (tf_ == TimeFormat::KNSec) {
-    auto ns = duration_cast<nanoseconds>(timePoint.time_since_epoch());
+    auto ns = duration_cast<nanoseconds>(time_point.time_since_epoch());
     auto fraction = ns.count() % 1000000000;
 
     std::cout << "." << std::setfill('0') << std::setw(9) << fraction << '\n';

@@ -10,25 +10,25 @@
 namespace packet_parse {
 
 void Hexdump(const uint8_t* data, size_t size) {
-  int kBytesPerLine = 16;
+  const int bytes_per_line = 16;
 
   for (size_t i = 0; i < size; i++) {
 
-    if (i % kBytesPerLine == 0)
+    if (i % bytes_per_line == 0)
       std::cout << std::hex << std::setfill('0') << std::setw(8) << i << ": ";
 
     std::cout << std::hex << std::setfill('0') << std::setw(2)
               << static_cast<int>(data[i]) << " ";
-    if ((i + 1) % kBytesPerLine == 0 || i + 1 == size) {
+    if ((i + 1) % bytes_per_line == 0 || i + 1 == size) {
       size_t j;
 
-      for (j = 0; j < kBytesPerLine - (i % kBytesPerLine) - 1; j++)
+      for (j = 0; j < bytes_per_line - (i % bytes_per_line) - 1; j++)
         std::cout << "   ";
 
-      if ((i + 1) % kBytesPerLine != 0)
+      if ((i + 1) % bytes_per_line != 0)
         std::cout << " ";
 
-      for (j = i - (i % kBytesPerLine); j <= i; j++) {
+      for (j = i - (i % bytes_per_line); j <= i; j++) {
         if (data[j] >= 32 && data[j] <= 126)
           std::cout << static_cast<char>(data[j]);
         else
