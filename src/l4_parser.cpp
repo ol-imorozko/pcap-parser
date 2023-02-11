@@ -17,7 +17,7 @@ void PrintUDPHeader(const UDPHeader& header) {
             << '\n';
 }
 
-RawProto L4Parser::ParseUDP(std::ifstream& file, size_t& packet_size) {
+RawProto L4Parser::ParseUDP(std::ifstream& file, std::streamsize& packet_size) {
   UDPHeader header{};
 
   if (packet_size < kUDPHeaderSize)
@@ -53,7 +53,8 @@ void PrintICMPHeader(const ICMPHeader& header) {
             << '\n';
 }
 
-RawProto L4Parser::ParseICMP(std::ifstream& file, size_t& packet_size) {
+RawProto L4Parser::ParseICMP(std::ifstream& file,
+                             std::streamsize& packet_size) {
   ICMPHeader header{};
 
   if (packet_size < kICMPHeaderSize)
@@ -77,7 +78,7 @@ RawProto L4Parser::ParseICMP(std::ifstream& file, size_t& packet_size) {
   return 0;
 }
 
-RawProto L4Parser::Parse(std::ifstream& file, size_t& packet_size,
+RawProto L4Parser::Parse(std::ifstream& file, std::streamsize& packet_size,
                          RawProto raw_proto) {
   auto proto = static_cast<Proto>(raw_proto);
 

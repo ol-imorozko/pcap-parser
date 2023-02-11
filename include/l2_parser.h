@@ -9,10 +9,11 @@ class L2Parser : public BaseParser {
     kEtnernet = 1,
   };
 
-  static RawProto ParseEthernet(std::ifstream& file, size_t& packet_size);
+  static RawProto ParseEthernet(std::ifstream& file,
+                                std::streamsize& packet_size);
 
  public:
-  RawProto Parse(std::ifstream& file, size_t& packet_size,
+  RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
                  RawProto raw_proto) override;
 };
 

@@ -10,12 +10,12 @@ class L4Parser : public BaseParser {
     kICMP = 1,
   };
 
-  static RawProto ParseUDP(std::ifstream& file, size_t& packet_size);
+  static RawProto ParseUDP(std::ifstream& file, std::streamsize& packet_size);
 
-  static RawProto ParseICMP(std::ifstream& file, size_t& packet_size);
+  static RawProto ParseICMP(std::ifstream& file, std::streamsize& packet_size);
 
  public:
-  RawProto Parse(std::ifstream& file, size_t& packet_size,
+  RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
                  RawProto raw_proto) override;
 };
 

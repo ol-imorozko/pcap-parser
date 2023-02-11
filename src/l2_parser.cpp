@@ -31,7 +31,8 @@ void PrintEthernetHeader(const EthernetHeader& header) {
             << std::setw(4) << header.ethertype << std::dec << '\n';
 }
 
-RawProto L2Parser::ParseEthernet(std::ifstream& file, size_t& packet_size) {
+RawProto L2Parser::ParseEthernet(std::ifstream& file,
+                                 std::streamsize& packet_size) {
   EthernetHeader header{};
 
   if (packet_size < kEthernetHeaderSize)
@@ -53,7 +54,7 @@ RawProto L2Parser::ParseEthernet(std::ifstream& file, size_t& packet_size) {
   return static_cast<RawProto>(header.ethertype);
 }
 
-RawProto L2Parser::Parse(std::ifstream& file, size_t& packet_size,
+RawProto L2Parser::Parse(std::ifstream& file, std::streamsize& packet_size,
                          RawProto raw_proto) {
   auto proto = static_cast<Proto>(raw_proto);
 

@@ -41,7 +41,7 @@ void PrintIpHeader(const IpHeader& header) {
   std::cout << " Destination address: " << dest_address_str << '\n';
 }
 
-RawProto L3Parser::ParseIp(std::ifstream& file, size_t& packet_size) {
+RawProto L3Parser::ParseIp(std::ifstream& file, std::streamsize& packet_size) {
   IpHeader header{};
 
   if (packet_size < kIpHeaderSize)
@@ -69,7 +69,7 @@ RawProto L3Parser::ParseIp(std::ifstream& file, size_t& packet_size) {
   return static_cast<RawProto>(header.protocol);
 }
 
-RawProto L3Parser::Parse(std::ifstream& file, size_t& packet_size,
+RawProto L3Parser::Parse(std::ifstream& file, std::streamsize& packet_size,
                          RawProto raw_proto) {
   auto proto = static_cast<Proto>(raw_proto);
 

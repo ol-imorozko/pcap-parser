@@ -34,11 +34,11 @@ class PacketHeader {
  public:
   explicit PacketHeader(RawPacketHeader& raw_header, FileHeader& file_header);
 
-  [[nodiscard]] unsigned int GetRealPacketLength() const {
+  [[nodiscard]] size_t GetRealPacketLength() const {
     return std::min(cooked_header_.incl_len, cooked_header_.orig_len);
   }
 
-  [[nodiscard]] unsigned int GetCapturedPacketLength() const {
+  [[nodiscard]] size_t GetCapturedPacketLength() const {
     return cooked_header_.incl_len;
   }
 

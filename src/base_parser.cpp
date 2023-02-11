@@ -40,19 +40,19 @@ void Hexdump(const uint8_t* data, size_t size) {
   std::cerr << std::dec;
 }
 
-void HexdumpBytes(std::ifstream& file, size_t size) {
-  uint8_t packet_data[size];
-  file.read(reinterpret_cast<char*>(packet_data), static_cast<long>(size));
+void HexdumpBytes(std::ifstream& file, std::streamsize n) {
+  uint8_t packet_data[n];
+  file.read(reinterpret_cast<char*>(packet_data), n);
   Hexdump(packet_data, file.gcount());
 }
 
-void TrimBytes(std::ifstream& file, size_t size) {
+void TrimBytes(std::ifstream& file, std::streamsize n) {
   if (file)
-    file.seekg(static_cast<long>(size), std::ios::cur);
+    file.seekg(static_cast<long>(n), std::ios::cur);
 }
 
-RawProto HandleParser(BaseParser& p, std::ifstream& file, size_t& packet_size,
-                      RawProto curr_proto) {
+RawProto HandleParser(BaseParser& p, std::ifstream& file,
+                      std::streamsize& packet_size, RawProto curr_proto) {
   try {
     RawProto next_proto = p.Parse(file, packet_size, curr_proto);
     return next_proto;

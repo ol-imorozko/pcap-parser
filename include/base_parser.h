@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
+#include <ios>
 #include <iostream>
 #include <utility>
 
@@ -24,16 +25,16 @@ class BaseParser {
   //
   // @p proto -- Raw protocol. It is advized to cast this to the
   // internal enum with the protocols for the particular layer.
-  virtual RawProto Parse(std::ifstream& file, size_t& packet_size,
+  virtual RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
                          RawProto raw_proto) = 0;
 };
 
-void HexdumpBytes(std::ifstream& file, size_t size);
+void HexdumpBytes(std::ifstream& file, std::streamsize n);
 
-void TrimBytes(std::ifstream& file, size_t size);
+void TrimBytes(std::ifstream& file, std::streamsize n);
 
-RawProto HandleParser(BaseParser& p, std::ifstream& file, size_t& packet_size,
-                      RawProto curr_proto);
+RawProto HandleParser(BaseParser& p, std::ifstream& file,
+                      std::streamsize& packet_size, RawProto curr_proto);
 
 class UnknownProto : public std::exception {
  private:

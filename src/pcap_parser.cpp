@@ -35,20 +35,21 @@ T ReadRawHeader(std::ifstream& file) {
 // In this case, we need to advance the position in the file by the number
 // of remaining bytes.
 packet_parse::RawProto RunParserAndTrim(packet_parse::BaseParser& parser,
-                                        std::ifstream& file, size_t& len,
+                                        std::ifstream& file,
+                                        std::streamsize& len,
                                         packet_parse::RawProto proto,
                                         size_t bytes_to_trim) {
   packet_parse::RawProto next_proto =
       packet_parse::HandleParser(parser, file, len, proto);
 
   if (len == 0)
-    packet_parse::TrimBytes(file, bytes_to_trim);
+    packet_parse::TrimBytes(file, static_cast<std::streamsize>(bytes_to_trim));
 
   return next_proto;
 }
 
-bool RunAllParsers(std::ifstream& file, size_t& len, uint32_t initial_proto,
-                   size_t bytes_to_trim) {
+bool RunAllParsers(std::ifstream& file, std::streamsize& len,
+                   uint32_t initial_proto, size_t bytes_to_trim) {
 
   auto next_proto = static_cast<packet_parse::RawProto>(initial_proto);
 
@@ -84,10 +85,12 @@ void ParsePacket(std::ifstream& file,
   if (captured > len)
     bytes_to_trim = captured - len;
 
-  if (!RunAllParsers(file, len, initial_proto, bytes_to_trim)) {
-    std::cerr << "Parsing ended but " << len << " bytes left:\n";
-    packet_parse::HexdumpBytes(file, len);
-    packet_parse::TrimBytes(file, bytes_to_trim);
+  auto packet_len = static_cast<std::streamsize>(len);
+
+  if (!RunAllParsers(file, packet_len, initial_proto, bytes_to_trim)) {
+    std::cerr << "Parsing ended but " << packet_len << " bytes left:\n";
+    packet_parse::HexdumpBytes(file, packet_len);
+    packet_parse::TrimBytes(file, static_cast<std::streamsize>(bytes_to_trim));
   }
 }
 
