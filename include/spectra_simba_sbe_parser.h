@@ -25,6 +25,17 @@ struct HeaderFormat {
   uint16_t version;
   constexpr static const char name[] = "Spectra-Simba 2.3.5. SBE Header";
 };
+struct OrderUpdateFormat {
+  int64_t md_entry_id;
+  types::Decimal5 md_entry_px;
+  int64_t md_entry_size;
+  /* types::MDFlagsSet md_flags; */
+  int32_t security_id;
+  uint32_t rpt_seq;
+  /* types::MDUpdateAction md_update_action; */
+  /* types::MDEntryType md_entry_type; */
+  constexpr static const char name[] = "Spectra-Simba 4.1.3. OrderUpdate";
+};
 #pragma pack(pop)
 
 class Header : public Protocol<HeaderFormat, HeaderFormat::name> {
@@ -62,6 +73,13 @@ class RootBlockParser : public BaseParser {
  public:
   ServiceDataPtr Parse(Stream& packet, std::streamsize& packet_size,
                        ServiceDataPtr data) const override;
+};
+
+class OrderUpdate
+    : public Protocol<OrderUpdateFormat, OrderUpdateFormat::name> {
+ private:
+  ServiceDataPtr Operation(const OrderUpdateFormat& header,
+                           ServiceDataPtr data) override;
 };
 
 }  // namespace packet_parse::spectra_simba::sbe
