@@ -36,11 +36,12 @@ ServiceDataPtr MarketDataPacket::Operation(
 
   flags_ = std::bitset<16>(header.msg_flags);
 
-  if (flags_[3]) {
+  using namespace types;
+  if (Flag(MsgFlagsSetValue::kIncrementalPacket, flags_)) {
     std::cout << "    | Incremental packet\n";
     format = PacketFormat::kIncremental;
 
-    if (flags_[0])
+    if (Flag(MsgFlagsSetValue::kLastFragment, flags_))
       std::cout << "    |   | Whole packet or the last fragment "
                    "of a packet\n";
     else
@@ -49,16 +50,17 @@ ServiceDataPtr MarketDataPacket::Operation(
     std::cout << "    | Snapshot packet\n";
     format = PacketFormat::kSnapshot;
 
-    if (flags_[1] && flags_[2])
+    if (Flag(MsgFlagsSetValue::kStartOfSnapshot, flags_) &&
+        Flag(MsgFlagsSetValue::kEndOfSnapshot, flags_))
       std::cout << "    |   | Whole packet\n";
-    else if (flags_[1])
+    else if (Flag(MsgFlagsSetValue::kStartOfSnapshot, flags_))
       std::cout << "    |   | First fragment of a packet\n";
-    else if (flags_[2])
+    else if (Flag(MsgFlagsSetValue::kEndOfSnapshot, flags_))
       std::cout << "    |   | Last fragment of a packet\n";
     else
       std::cout << "    |   | Fragment of a packet\n";
   }
-  if (flags_[4])
+  if (Flag(MsgFlagsSetValue::kPossDupFlag, flags_))
     std::cout << "    | Broadcasting full order-books in the form of "
                  "Incremental packages\n";
   else

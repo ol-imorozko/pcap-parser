@@ -2,9 +2,11 @@
 #include <arpa/inet.h>
 #include <bit>
 #include <bitset>
+#include <cstdint>
 #include <utility>
 
 #include "include/base_parser.h"
+#include "include/spectra_simba_types.h"
 #include "include/spectra_simba_utility.h"
 
 #define FIXME_SKIP_FRAGMENTED_PACKETS 1
@@ -21,7 +23,7 @@ class L1Parser : public BaseParser {
 struct MarketDataPacketHeader {
   uint32_t msg_seq_num;
   uint16_t msg_size;
-  uint16_t msg_flags;
+  types::MsgFlagsSet msg_flags;
   uint64_t sending_time;
   constexpr static const char name[] =
       "Spectra-Simba 2.3.3: Market Data Packet Header";
@@ -31,7 +33,9 @@ struct MarketDataPacketHeader {
 class MarketDataPacket
     : public Protocol<MarketDataPacketHeader, MarketDataPacketHeader::name> {
  private:
+#ifdef FIXME_SKIP_FRAGMENTED_PACKETS
   std::bitset<16> flags_;
+#endif
 
   void Transform([[maybe_unused]] MarketDataPacketHeader& header) override {
     // From Spectra Simba 2.3.3. Market Data Packet Header:
