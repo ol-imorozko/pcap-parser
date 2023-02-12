@@ -9,9 +9,9 @@
 #include "include/pcap_headers.h"
 
 template <class T>
-T ReadRawHeader(std::ifstream& file) {
+T ReadRawHeader(packet_parse::Stream& data) {
   T raw_header{};
-  file.read(reinterpret_cast<char*>(&raw_header), sizeof(T));
+  data.read(reinterpret_cast<char*>(&raw_header), sizeof(T));
   return raw_header;
 }
 
@@ -35,38 +35,39 @@ T ReadRawHeader(std::ifstream& file) {
 // In this case, we need to advance the position in the file by the number
 // of remaining bytes.
 packet_parse::RawProto RunParserAndTrim(packet_parse::BaseParser& parser,
-                                        std::ifstream& file,
+                                        packet_parse::Stream& packet,
                                         std::streamsize& len,
                                         packet_parse::RawProto proto,
                                         size_t bytes_to_trim) {
   packet_parse::RawProto next_proto =
-      packet_parse::HandleParser(parser, file, len, proto);
+      packet_parse::HandleParser(parser, packet, len, proto);
 
   if (len == 0)
-    packet_parse::TrimBytes(file, static_cast<std::streamsize>(bytes_to_trim));
+    packet_parse::TrimBytes(packet,
+                            static_cast<std::streamsize>(bytes_to_trim));
 
   return next_proto;
 }
 
-bool RunAllParsers(std::ifstream& file, std::streamsize& len,
+bool RunAllParsers(packet_parse::Stream& packet, std::streamsize& len,
                    uint32_t initial_proto, size_t bytes_to_trim) {
 
   auto next_proto = static_cast<packet_parse::RawProto>(initial_proto);
 
   packet_parse::L2Parser l2p;
-  next_proto = RunParserAndTrim(l2p, file, len, next_proto, bytes_to_trim);
+  next_proto = RunParserAndTrim(l2p, packet, len, next_proto, bytes_to_trim);
 
   if (len == 0)
     return true;
 
   packet_parse::L3Parser l3p;
-  next_proto = RunParserAndTrim(l3p, file, len, next_proto, bytes_to_trim);
+  next_proto = RunParserAndTrim(l3p, packet, len, next_proto, bytes_to_trim);
 
   if (len == 0)
     return true;
 
   packet_parse::L4Parser l4p;
-  next_proto = RunParserAndTrim(l4p, file, len, next_proto, bytes_to_trim);
+  next_proto = RunParserAndTrim(l4p, packet, len, next_proto, bytes_to_trim);
 
   if (len == 0)
     return true;
@@ -74,7 +75,7 @@ bool RunAllParsers(std::ifstream& file, std::streamsize& len,
   return false;
 }
 
-void ParsePacket(std::ifstream& file,
+void ParsePacket(packet_parse::Stream& packet,
                  const pcap_parse::PacketHeader& pcap_packet_header,
                  uint32_t initial_proto) {
   size_t len = pcap_packet_header.GetRealPacketLength();
@@ -86,23 +87,24 @@ void ParsePacket(std::ifstream& file,
 
   auto packet_len = static_cast<std::streamsize>(len);
 
-  if (!RunAllParsers(file, packet_len, initial_proto, bytes_to_trim)) {
+  if (!RunAllParsers(packet, packet_len, initial_proto, bytes_to_trim)) {
     std::cerr << "Parsing ended but " << packet_len << " bytes left:\n";
-    packet_parse::HexdumpBytes(file, packet_len);
-    packet_parse::TrimBytes(file, static_cast<std::streamsize>(bytes_to_trim));
+    packet_parse::HexdumpBytes(packet, packet_len);
+    packet_parse::TrimBytes(packet,
+                            static_cast<std::streamsize>(bytes_to_trim));
   }
 }
 
-void ParsePcapPackets(std::ifstream& file,
+void ParsePcapPackets(packet_parse::Stream& data,
                       const pcap_parse::FileHeader& file_header) {
   file_header.Print();
 
   // Read PCAP packets
-  while (!file.eof()) {
+  while (!data.eof()) {
     // Read raw PCAP packet header
-    auto raw_packet_header = ReadRawHeader<pcap_parse::RawPacketHeader>(file);
+    auto raw_packet_header = ReadRawHeader<pcap_parse::RawPacketHeader>(data);
 
-    if (file.eof())
+    if (data.eof())
       break;
 
     // Get normal PCAP packet header
@@ -110,7 +112,7 @@ void ParsePcapPackets(std::ifstream& file,
 
     packet_header.Print();
 
-    ParsePacket(file, packet_header, file_header.GetLinkType());
+    ParsePacket(data, packet_header, file_header.GetLinkType());
   }
 }
 

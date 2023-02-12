@@ -8,18 +8,18 @@
 
 namespace packet_parse {
 
-RawProto L4Parser::Parse(std::ifstream& file, std::streamsize& packet_size,
+RawProto L4Parser::Parse(Stream& packet, std::streamsize& packet_size,
                          RawProto raw_proto) {
   auto proto = static_cast<Proto>(raw_proto);
 
   switch (proto) {
     case Proto::kUDP: {
       UDP p;
-      return p.Parse(file, packet_size);
+      return p.Parse(packet, packet_size);
     }
     case Proto::kICMP: {
       ICMP p;
-      return p.Parse(file, packet_size);
+      return p.Parse(packet, packet_size);
     }
     default:
       throw UnknownProto(raw_proto);

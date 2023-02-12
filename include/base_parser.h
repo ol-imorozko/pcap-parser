@@ -6,6 +6,8 @@
 
 namespace packet_parse {
 
+using Stream = std::basic_istream<char>;
+
 // Different protocols could use different fixed num unsigned
 // data types, so in order to create a unified interface it
 // is better to cast such types to uint64_t.
@@ -45,7 +47,7 @@ class EoF : public std::exception {
 
 class BaseParser {
  public:
-  virtual RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
+  virtual RawProto Parse(Stream& packet, std::streamsize& packet_size,
                          RawProto raw_proto) = 0;
 };
 
@@ -57,7 +59,7 @@ class Protocol {
   std::streamsize header_size_;
   std::string name_;
 
-  Header GetHeader(std::ifstream& file, std::streamsize& packet_size);
+  Header GetHeader(Stream& packet, std::streamsize& packet_size);
 
   virtual void Transform([[maybe_unused]] Header& header){};
 
@@ -71,8 +73,8 @@ class Protocol {
   Protocol() : header_size_(sizeof(Header)), name_(name){};
 
   // Template Method pattern
-  RawProto Parse(std::ifstream& file, std::streamsize& packet_size) {
-    Header header = GetHeader(file, packet_size);
+  RawProto Parse(Stream& packet, std::streamsize& packet_size) {
+    Header header = GetHeader(packet, packet_size);
     Transform(header);
     Operation(header);
     return GetNextProto(header);
@@ -80,18 +82,18 @@ class Protocol {
 };
 
 template <class Header, char const* name>
-Header Protocol<Header, name>::GetHeader(std::ifstream& file,
+Header Protocol<Header, name>::GetHeader(Stream& packet,
                                          std::streamsize& packet_size) {
   Header header{};
 
   if (packet_size < header_size_)
     throw NotEnoughData(name_, header_size_, packet_size);
 
-  file.read(reinterpret_cast<char*>(&header), header_size_);
+  packet.read(reinterpret_cast<char*>(&header), header_size_);
 
-  if (file.eof()) {
+  if (packet.eof()) {
     packet_size = 0;
-    throw EoF(name_, header_size_, file.gcount());
+    throw EoF(name_, header_size_, packet.gcount());
   }
 
   packet_size -= header_size_;
@@ -99,10 +101,10 @@ Header Protocol<Header, name>::GetHeader(std::ifstream& file,
   return header;
 }
 
-void HexdumpBytes(std::ifstream& file, std::streamsize n);
+void HexdumpBytes(Stream& packet, std::streamsize n);
 
-void TrimBytes(std::ifstream& file, std::streamsize n);
+void TrimBytes(Stream& packet, std::streamsize n);
 
-RawProto HandleParser(BaseParser& p, std::ifstream& file,
+RawProto HandleParser(BaseParser& p, Stream& packet,
                       std::streamsize& packet_size, RawProto curr_proto);
 }  // namespace packet_parse

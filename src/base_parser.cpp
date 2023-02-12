@@ -40,21 +40,21 @@ void Hexdump(const uint8_t* data, size_t size) {
   std::cout << std::dec;
 }
 
-void HexdumpBytes(std::ifstream& file, std::streamsize n) {
+void HexdumpBytes(Stream& packet, std::streamsize n) {
   auto packet_data = std::make_unique<uint8_t[]>(n);
-  file.read(reinterpret_cast<char*>(packet_data.get()), n);
-  Hexdump(packet_data.get(), file.gcount());
+  packet.read(reinterpret_cast<char*>(packet_data.get()), n);
+  Hexdump(packet_data.get(), packet.gcount());
 }
 
-void TrimBytes(std::ifstream& file, std::streamsize n) {
-  if (file)
-    file.seekg(static_cast<long>(n), std::ios::cur);
+void TrimBytes(Stream& packet, std::streamsize n) {
+  if (packet)
+    packet.seekg(static_cast<long>(n), std::ios::cur);
 }
 
-RawProto HandleParser(BaseParser& p, std::ifstream& file,
+RawProto HandleParser(BaseParser& p, Stream& packet,
                       std::streamsize& packet_size, RawProto curr_proto) {
   try {
-    RawProto next_proto = p.Parse(file, packet_size, curr_proto);
+    RawProto next_proto = p.Parse(packet, packet_size, curr_proto);
     return next_proto;
   } catch (const std::exception& e) {
     std::cerr << e.what() << "\nData left: \n";
@@ -62,7 +62,7 @@ RawProto HandleParser(BaseParser& p, std::ifstream& file,
     if (packet_size == 0)
       std::cerr << "No data left\n";
     else {
-      HexdumpBytes(file, packet_size);
+      HexdumpBytes(packet, packet_size);
       packet_size = 0;
     }
 
