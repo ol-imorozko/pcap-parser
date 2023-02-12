@@ -15,8 +15,8 @@ class L4Parser : public BaseParser {
   };
 
  public:
-  RawProto Parse(Stream& packet, std::streamsize& packet_size,
-                 RawProto raw_proto) override;
+  ServiceDataPtr Parse(Stream& packet, std::streamsize& packet_size,
+                       ServiceDataPtr data) const override;
 };
 
 #pragma pack(push, 1)
@@ -42,13 +42,15 @@ class UDP : public Protocol<UDPHeader, UDPHeader::name> {
  private:
   void Transform(UDPHeader& header) override;
 
-  void Operation(const UDPHeader& header) override;
+  ServiceDataPtr Operation(const UDPHeader& header,
+                           ServiceDataPtr data) override;
 };
 
 class ICMP : public Protocol<ICMPHeader, ICMPHeader::name> {
  private:
   void Transform(ICMPHeader& header) override;
 
-  void Operation(const ICMPHeader& header) override;
+  ServiceDataPtr Operation(const ICMPHeader& header,
+                           ServiceDataPtr data) override;
 };
 }  // namespace packet_parse

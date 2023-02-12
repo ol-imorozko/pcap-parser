@@ -14,8 +14,8 @@ class L3Parser : public BaseParser {
   };
 
  public:
-  RawProto Parse(Stream& packet, std::streamsize& packet_size,
-                 RawProto raw_proto) override;
+  ServiceDataPtr Parse(Stream& packet, std::streamsize& packet_size,
+                       ServiceDataPtr data) const override;
 };
 
 #pragma pack(push, 1)
@@ -42,7 +42,8 @@ class Ip : public Protocol<IpHeader, IpHeader::name> {
     return static_cast<RawProto>(header.protocol);
   }
 
-  void Operation(const IpHeader& header) override;
+  ServiceDataPtr Operation(const IpHeader& header,
+                           ServiceDataPtr data) override;
 };
 
 }  // namespace packet_parse

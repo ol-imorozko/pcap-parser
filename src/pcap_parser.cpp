@@ -1,6 +1,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 #include "include/base_parser.h"
 #include "include/l2_parser.h"
@@ -34,40 +35,43 @@ T ReadRawHeader(packet_parse::Stream& data) {
 //
 // In this case, we need to advance the position in the file by the number
 // of remaining bytes.
-packet_parse::RawProto RunParserAndTrim(packet_parse::BaseParser& parser,
-                                        packet_parse::Stream& packet,
-                                        std::streamsize& len,
-                                        packet_parse::RawProto proto,
-                                        size_t bytes_to_trim) {
-  packet_parse::RawProto next_proto =
-      packet_parse::HandleParser(parser, packet, len, proto);
+packet_parse::ServiceDataPtr RunParserAndTrim(
+    const packet_parse::BaseParser& parser, packet_parse::Stream& packet,
+    std::streamsize& len, packet_parse::ServiceDataPtr data,
+    size_t bytes_to_trim) {
+  packet_parse::ServiceDataPtr next_data =
+      packet_parse::HandleParser(parser, packet, len, std::move(data));
 
   if (len == 0)
     packet_parse::TrimBytes(packet,
                             static_cast<std::streamsize>(bytes_to_trim));
 
-  return next_proto;
+  return next_data;
 }
 
 bool RunAllParsers(packet_parse::Stream& packet, std::streamsize& len,
                    uint32_t initial_proto, size_t bytes_to_trim) {
 
-  auto next_proto = static_cast<packet_parse::RawProto>(initial_proto);
+  packet_parse::ServiceDataPtr next_data =
+      std::make_unique<packet_parse::ServiceData>(initial_proto);
 
   packet_parse::L2Parser l2p;
-  next_proto = RunParserAndTrim(l2p, packet, len, next_proto, bytes_to_trim);
+  next_data =
+      RunParserAndTrim(l2p, packet, len, std::move(next_data), bytes_to_trim);
 
   if (len == 0)
     return true;
 
   packet_parse::L3Parser l3p;
-  next_proto = RunParserAndTrim(l3p, packet, len, next_proto, bytes_to_trim);
+  next_data =
+      RunParserAndTrim(l3p, packet, len, std::move(next_data), bytes_to_trim);
 
   if (len == 0)
     return true;
 
   packet_parse::L4Parser l4p;
-  next_proto = RunParserAndTrim(l4p, packet, len, next_proto, bytes_to_trim);
+  next_data =
+      RunParserAndTrim(l4p, packet, len, std::move(next_data), bytes_to_trim);
 
   if (len == 0)
     return true;

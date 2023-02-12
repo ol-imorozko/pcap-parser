@@ -5,17 +5,17 @@
 
 namespace packet_parse {
 
-RawProto L3Parser::Parse(Stream& packet, std::streamsize& packet_size,
-                         RawProto raw_proto) {
-  auto proto = static_cast<Proto>(raw_proto);
+ServiceDataPtr L3Parser::Parse(Stream& packet, std::streamsize& packet_size,
+                               ServiceDataPtr data) const {
+  auto proto = static_cast<Proto>(data->proto);
 
   switch (proto) {
     case Proto::kIp: {
       Ip p;
-      return p.Parse(packet, packet_size);
+      return p.Parse(packet, packet_size, std::move(data));
     }
     default:
-      throw UnknownProto(raw_proto);
+      throw UnknownProto(data->proto);
   }
 }
 
@@ -30,7 +30,7 @@ void Ip::Transform(IpHeader& header) {
   header.header_checksum = ntohs(header.header_checksum);
 }
 
-void Ip::Operation(const IpHeader& header) {
+ServiceDataPtr Ip::Operation(const IpHeader& header, ServiceDataPtr data) {
   std::cout << "IP header:" << '\n';
   std::cout << "  Version: " << (header.version_and_header_length >> 4) << '\n';
   std::cout << "  Header length: "
@@ -61,6 +61,8 @@ void Ip::Operation(const IpHeader& header) {
             INET_ADDRSTRLEN);
 
   std::cout << " Destination address: " << dest_address_str << '\n';
+
+  return data;
 }
 
 }  // namespace packet_parse

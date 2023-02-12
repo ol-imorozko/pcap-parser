@@ -51,11 +51,10 @@ void TrimBytes(Stream& packet, std::streamsize n) {
     packet.seekg(static_cast<long>(n), std::ios::cur);
 }
 
-RawProto HandleParser(BaseParser& p, Stream& packet,
-                      std::streamsize& packet_size, RawProto curr_proto) {
+ServiceDataPtr HandleParser(const BaseParser& p, Stream& packet,
+                            std::streamsize& packet_size, ServiceDataPtr data) {
   try {
-    RawProto next_proto = p.Parse(packet, packet_size, curr_proto);
-    return next_proto;
+    return p.Parse(packet, packet_size, std::move(data));
   } catch (const std::exception& e) {
     std::cerr << e.what() << "\nData left: \n";
 
@@ -66,7 +65,7 @@ RawProto HandleParser(BaseParser& p, Stream& packet,
       packet_size = 0;
     }
 
-    return 0;
+    return std::make_unique<ServiceData>();
   }
 }
 

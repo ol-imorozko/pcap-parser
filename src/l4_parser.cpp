@@ -8,21 +8,21 @@
 
 namespace packet_parse {
 
-RawProto L4Parser::Parse(Stream& packet, std::streamsize& packet_size,
-                         RawProto raw_proto) {
-  auto proto = static_cast<Proto>(raw_proto);
+ServiceDataPtr L4Parser::Parse(Stream& packet, std::streamsize& packet_size,
+                               ServiceDataPtr data) const {
+  auto proto = static_cast<Proto>(data->proto);
 
   switch (proto) {
     case Proto::kUDP: {
       UDP p;
-      return p.Parse(packet, packet_size);
+      return p.Parse(packet, packet_size, std::move(data));
     }
     case Proto::kICMP: {
       ICMP p;
-      return p.Parse(packet, packet_size);
+      return p.Parse(packet, packet_size, std::move(data));
     }
     default:
-      throw UnknownProto(raw_proto);
+      throw UnknownProto(data->proto);
   }
 }
 
@@ -34,13 +34,15 @@ void UDP::Transform(UDPHeader& header) {
   header.checksum = ntohs(header.checksum);
 }
 
-void UDP::Operation(const UDPHeader& header) {
+ServiceDataPtr UDP::Operation(const UDPHeader& header, ServiceDataPtr data) {
   std::cout << "UDP header:" << '\n';
   std::cout << "  Source port: " << header.source_port << '\n';
   std::cout << "  Destination port: " << header.destination_port << '\n';
   std::cout << "  Length: " << header.length << '\n';
   std::cout << "  Checksum: 0x" << std::hex << header.checksum << std::dec
             << '\n';
+
+  return data;
 }
 
 void ICMP::Transform(ICMPHeader& header) {
@@ -50,7 +52,7 @@ void ICMP::Transform(ICMPHeader& header) {
   header.sequence_number = ntohs(header.sequence_number);
 }
 
-void ICMP::Operation(const ICMPHeader& header) {
+ServiceDataPtr ICMP::Operation(const ICMPHeader& header, ServiceDataPtr data) {
   std::cout << "ICMP header:" << '\n';
   std::cout << "  Type: " << static_cast<int>(header.type) << '\n';
   std::cout << "  Code: " << static_cast<int>(header.code) << '\n';
@@ -58,5 +60,7 @@ void ICMP::Operation(const ICMPHeader& header) {
   std::cout << "  Identifier: " << header.identifier << '\n';
   std::cout << "  Sequence number: " << header.sequence_number << std::dec
             << '\n';
+
+  return data;
 }
 }  // namespace packet_parse

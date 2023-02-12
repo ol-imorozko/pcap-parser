@@ -6,21 +6,22 @@
 
 namespace packet_parse {
 
-RawProto L2Parser::Parse(Stream& packet, std::streamsize& packet_size,
-                         RawProto raw_proto) {
-  auto proto = static_cast<Proto>(raw_proto);
+ServiceDataPtr L2Parser::Parse(Stream& packet, std::streamsize& packet_size,
+                               ServiceDataPtr data) const {
+  auto proto = static_cast<Proto>(data->proto);
 
   switch (proto) {
     case Proto::kEtnernet: {
       Ethernet p;
-      return p.Parse(packet, packet_size);
+      return p.Parse(packet, packet_size, std::move(data));
     }
     default:
-      throw UnknownProto(raw_proto);
+      throw UnknownProto(data->proto);
   }
 }
 
-void Ethernet::Operation(const EthernetHeader& header) {
+ServiceDataPtr Ethernet::Operation(const EthernetHeader& header,
+                                   ServiceDataPtr data) {
   std::cout << "Ethernet header:\n  Destination: ";
 
   for (int i = 0; i < 6; i++) {
@@ -41,6 +42,8 @@ void Ethernet::Operation(const EthernetHeader& header) {
 
   std::cout << "\n  EtherType: 0x" << std::hex << std::setfill('0')
             << std::setw(4) << header.ethertype << std::dec << '\n';
+
+  return data;
 }
 
 }  // namespace packet_parse

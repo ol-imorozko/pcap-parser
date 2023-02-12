@@ -2,6 +2,8 @@
 #include <exception>
 #include <fstream>
 #include <ios>
+#include <limits>
+#include <memory>
 #include <utility>
 
 namespace packet_parse {
@@ -12,6 +14,23 @@ using Stream = std::basic_istream<char>;
 // data types, so in order to create a unified interface it
 // is better to cast such types to uint64_t.
 using RawProto = uint64_t;
+constexpr RawProto kNoProtoNeeded = std::numeric_limits<uint64_t>::max();
+
+// Sometimes it is helpful to pass some data from the bottom level parser
+// to the top one. For example, the header for some protocol could contain
+// the size of a following data. In that case we should pass that size to
+// the next layer parser. We can use "ServiceData" structure for that.
+//
+// Usually this data will contain identifier of the next protocol,
+// so it's a default field;
+struct ServiceData {
+  RawProto proto = kNoProtoNeeded;
+
+  ServiceData() = default;
+  explicit ServiceData(RawProto proto) : proto(proto){};
+  explicit ServiceData(uint32_t proto) : proto(static_cast<RawProto>(proto)){};
+};
+using ServiceDataPtr = std::unique_ptr<ServiceData>;
 
 class UnknownProto : public std::exception {
  private:
@@ -47,8 +66,8 @@ class EoF : public std::exception {
 
 class BaseParser {
  public:
-  virtual RawProto Parse(Stream& packet, std::streamsize& packet_size,
-                         RawProto raw_proto) = 0;
+  virtual ServiceDataPtr Parse(Stream& packet, std::streamsize& packet_size,
+                               ServiceDataPtr data) const = 0;
 };
 
 // Parametrized by a packed structure with protocol header definition and
@@ -64,20 +83,25 @@ class Protocol {
   virtual void Transform([[maybe_unused]] Header& header){};
 
   virtual RawProto GetNextProto([[maybe_unused]] const Header& header) {
-    return 0;
+    return kNoProtoNeeded;
   };
 
-  virtual void Operation([[maybe_unused]] const Header& header){};
+  virtual ServiceDataPtr Operation([[maybe_unused]] const Header& header,
+                                   ServiceDataPtr data) {
+    return data;
+  };
 
  public:
   Protocol() : header_size_(sizeof(Header)), name_(name){};
 
   // Template Method pattern
-  RawProto Parse(Stream& packet, std::streamsize& packet_size) {
+  ServiceDataPtr Parse(Stream& packet, std::streamsize& packet_size,
+                       ServiceDataPtr data) {
     Header header = GetHeader(packet, packet_size);
     Transform(header);
-    Operation(header);
-    return GetNextProto(header);
+    ServiceDataPtr new_data = Operation(header, std::move(data));
+    new_data->proto = GetNextProto(header);
+    return new_data;
   }
 };
 
@@ -105,6 +129,9 @@ void HexdumpBytes(Stream& packet, std::streamsize n);
 
 void TrimBytes(Stream& packet, std::streamsize n);
 
-RawProto HandleParser(BaseParser& p, Stream& packet,
-                      std::streamsize& packet_size, RawProto curr_proto);
+// This function calls Parse() method of a BaseParser and handles exceptions, if any.
+// Protocol parsers will get ServiceData, use it (if necessary), and then
+// they could change it for the next parser.
+ServiceDataPtr HandleParser(const BaseParser& p, Stream& packet,
+                            std::streamsize& packet_size, ServiceDataPtr data);
 }  // namespace packet_parse
