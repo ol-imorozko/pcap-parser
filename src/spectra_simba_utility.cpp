@@ -18,4 +18,16 @@ void PrintTimeStamp(uint64_t ns_since_epoch) {
   std::cout << "." << std::setfill('0') << std::setw(9) << fraction << '\n';
 }
 
+namespace sbe {
+UnsupportedSchema::UnsupportedSchema(size_t id, size_t version) {
+  std::ostringstream oss;
+  oss << "SBE Message uses unsupported Simba-Spectra Schema version: ID: " << id
+      << ", Version: " << version
+      << ".\nSupported version: ID: " << kSupportedShemaId
+      << ", Version: " << kSupportedSchemaVersion;
+
+  msg = oss.str();
+}
+}  // namespace sbe
+
 }  // namespace packet_parse::spectra_simba

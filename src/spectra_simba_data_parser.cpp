@@ -1,39 +1,48 @@
 #include "include/spectra_simba_data_parser.h"
 #include "include/spectra_simba_sbe_parser.h"
+#include "include/spectra_simba_utility.h"
 
 namespace packet_parse::spectra_simba {
 
-RawProto DataParser::Parse(Stream& packet, std::streamsize& packet_size,
-                           RawProto raw_proto) {
-  auto proto = static_cast<DataType>(raw_proto);
+ServiceDataPtr DataParser::Parse(Stream& packet, std::streamsize& packet_size,
+                                 ServiceDataPtr data) const {
+  auto packet_indicator = static_cast<FormatIndicator*>(data.get());
 
-  switch (proto) {
-    case DataType::MultipleSBEMessages: {
-      sbe::MessageParser p;
+  switch (packet_indicator->format) {
+    case PacketFormat::kIncremental: {
+      sbe::MessageParser mp;
 
       while (packet_size != 0) {
-        // At this point we're already know that the data remaining will
+        // Simba Spectra 2.3.1. Incremental packet format
+        // Packet consists of the following parts:
+        // ...
+        // One or more SBE messages
+        //
+        // So at this point we're already know that the data remaining will
         // be just one or more SBE Messages, so we can reuse the
         // basic HandleParser function that is used in main() to run
         // some SBE Message parsers.
-        // Also we don't care about the "next_proto" argument, hence
-        // zero as a last argument.
-        HandleParser(p, packet, packet_size, 0);
+        data = HandleParser(mp, packet, packet_size, std::move(data));
       }
 
-      return 0;
+      return data;
     }
-    case DataType::SBEMessageWithRepeating: {
+    case PacketFormat::kSnapshot: {
+      // Simba Spectra 2.3.1. Incremental packet format
+      // Packet consists of the following parts:
+      // ...
+      // FIX message in SBE format
+      //
+      // Also there are RepeatingGroupDimensions header right after
+      // the Root block.
       sbe::MessageParser mp;
-      HandleParser(mp, packet, packet_size, 0);
+      return HandleParser(mp, packet, packet_size, std::move(data));
 
       /* RepeatingSectionParser rsp; */
       /* HandleParser(rsp, packet, packet_size, 0); */
-
-      return 0;
     }
     default:
-      throw UnknownProto(raw_proto);
+      throw UnknownProto(data->proto);
   }
 }
 

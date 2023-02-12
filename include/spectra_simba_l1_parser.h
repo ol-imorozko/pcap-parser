@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "include/base_parser.h"
+#include "include/spectra_simba_utility.h"
 
 #define FIXME_SKIP_FRAGMENTED_PACKETS 1
 
@@ -12,8 +13,8 @@ namespace packet_parse::spectra_simba {
 
 class L1Parser : public BaseParser {
  public:
-  RawProto Parse(Stream& packet, std::streamsize& packet_size,
-                 RawProto raw_proto) override;
+  ServiceDataPtr Parse(Stream& packet, std::streamsize& packet_size,
+                       ServiceDataPtr data) const override;
 };
 
 #pragma pack(push, 1)
@@ -43,12 +44,8 @@ class MarketDataPacket
     static_assert(std::endian::native == std::endian::little);
   }
 
-  RawProto GetNextProto(const MarketDataPacketHeader& header) override {
-    // 0 - flag of the 'Snapshot' packet, 1 - flag of the 'Incremental' packet
-    return static_cast<RawProto>((header.msg_flags & 0x8) ? 1 : 0);
-  }
-
-  void Operation(const MarketDataPacketHeader& header) override;
+  ServiceDataPtr Operation(const MarketDataPacketHeader& header,
+                           ServiceDataPtr data) override;
 
 #ifdef FIXME_SKIP_FRAGMENTED_PACKETS
  public:

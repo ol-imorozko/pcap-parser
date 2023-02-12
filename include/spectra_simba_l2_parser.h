@@ -5,15 +5,9 @@
 namespace packet_parse::spectra_simba {
 
 class L2Parser : public BaseParser {
- private:
-  enum class PacketType {
-    Incremental = 1,
-    Snapshot = 0,
-  };
-
  public:
-  RawProto Parse(Stream& packet, std::streamsize& packet_size,
-                 RawProto raw_proto) override;
+  ServiceDataPtr Parse(Stream& packet, std::streamsize& packet_size,
+                       ServiceDataPtr data) const override;
 };
 
 #pragma pack(push, 1)
@@ -26,7 +20,7 @@ struct IncrementalHeader {
   // This is the null value for the optional <type name="ExchangeTradingSessionID">
   // in a <composite name="IncrementalPacketHeader"> as per
   // Spectra-Simba message schema ver. FIX5SP2
-  constexpr static const uint32_t id_null_value = 4294967295;
+  constexpr static uint32_t id_null_value = 4294967295;
 };
 #pragma pack(pop)
 
@@ -39,18 +33,8 @@ class Incremental
            IncrementalHeader::id_null_value;
   }
 
-  RawProto GetNextProto(
-      [[maybe_unused]] const IncrementalHeader& header) override {
-    // If the packet is Incremental, we know that the next data will
-    // be multiple SBE messages. Let's mark that case with "1".
-    //
-    // With snapshot header, the next data will be one SBE message with
-    // the repeating group dimensions after the Root block. We will
-    // mark that case with "0"
-    return 1;
-  }
-
-  void Operation(const IncrementalHeader& header) override;
+  ServiceDataPtr Operation(const IncrementalHeader& header,
+                           ServiceDataPtr data) override;
 };
 
 }  // namespace packet_parse::spectra_simba

@@ -80,19 +80,22 @@ bool RunAllParsers(packet_parse::Stream& packet, std::streamsize& len,
     return true;
 
   packet_parse::spectra_simba::L1Parser ss_l1p;
-  next_proto = RunParserAndTrim(ss_l1p, packet, len, next_proto, bytes_to_trim);
+  next_data = RunParserAndTrim(ss_l1p, packet, len, std::move(next_data),
+                               bytes_to_trim);
 
   if (len == 0)
     return true;
 
   packet_parse::spectra_simba::L2Parser ss_l2p;
-  next_proto = RunParserAndTrim(ss_l2p, packet, len, next_proto, bytes_to_trim);
+  next_data = RunParserAndTrim(ss_l2p, packet, len, std::move(next_data),
+                               bytes_to_trim);
 
   if (len == 0)
     return true;
 
   packet_parse::spectra_simba::DataParser ss_dp;
-  next_proto = RunParserAndTrim(ss_dp, packet, len, next_proto, bytes_to_trim);
+  next_data =
+      RunParserAndTrim(ss_dp, packet, len, std::move(next_data), bytes_to_trim);
 
   if (len == 0)
     return true;

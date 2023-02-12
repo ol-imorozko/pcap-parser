@@ -7,27 +7,25 @@
 
 namespace packet_parse::spectra_simba {
 
-RawProto L2Parser::Parse(Stream& packet, std::streamsize& packet_size,
-                         [[maybe_unused]] RawProto raw_proto) {
-  auto proto = static_cast<PacketType>(raw_proto);
+ServiceDataPtr L2Parser::Parse(Stream& packet, std::streamsize& packet_size,
+                               ServiceDataPtr data) const {
 
-  switch (proto) {
-    case PacketType::Incremental: {
+  auto packet_indicator = static_cast<FormatIndicator*>(data.get());
+
+  switch (packet_indicator->format) {
+    case PacketFormat::kIncremental: {
       Incremental p;
-      return p.Parse(packet, packet_size);
+      return p.Parse(packet, packet_size, std::move(data));
     }
-    case PacketType::Snapshot:
-      // Next protocol identifier is zero if the packet is Snapshot
-      //
-      // See "include/spectra_simba_l2_parser.h : Incremental::GetNextProto"
-      // for details
-      return 0;
+    case PacketFormat::kSnapshot:
+      return data;
     default:
-      throw UnknownProto(raw_proto);
+      throw UnknownProto(data->proto);
   }
 }
 
-void Incremental::Operation(const IncrementalHeader& header) {
+ServiceDataPtr Incremental::Operation(const IncrementalHeader& header,
+                                      ServiceDataPtr data) {
   std::cout << "Incremental Packet Header:\n";
   std::cout
       << "  UTC time of the beginning of transaction processing in matching: ";
@@ -37,6 +35,8 @@ void Incremental::Operation(const IncrementalHeader& header) {
     std::cout << header.exchange_trading_session_id << '\n';
   else
     std::cout << "Not present\n";
+
+  return data;
 }
 
 }  // namespace packet_parse::spectra_simba
