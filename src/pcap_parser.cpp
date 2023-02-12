@@ -34,7 +34,7 @@ T ReadRawHeader(std::ifstream& file) {
 //
 // In this case, we need to advance the position in the file by the number
 // of remaining bytes.
-packet_parse::RawProto RunParserAndTrim(const packet_parse::BaseParser& parser,
+packet_parse::RawProto RunParserAndTrim(packet_parse::BaseParser& parser,
                                         std::ifstream& file,
                                         std::streamsize& len,
                                         packet_parse::RawProto proto,

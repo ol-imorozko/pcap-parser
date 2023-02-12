@@ -6,7 +6,7 @@
 namespace packet_parse {
 
 RawProto L3Parser::Parse(std::ifstream& file, std::streamsize& packet_size,
-                         RawProto raw_proto) const {
+                         RawProto raw_proto) {
   auto proto = static_cast<Proto>(raw_proto);
 
   switch (proto) {

@@ -46,7 +46,7 @@ class EoF : public std::exception {
 class BaseParser {
  public:
   virtual RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
-                         RawProto raw_proto) const = 0;
+                         RawProto raw_proto) = 0;
 };
 
 // Parametrized by a packed structure with protocol header definition and
@@ -103,6 +103,6 @@ void HexdumpBytes(std::ifstream& file, std::streamsize n);
 
 void TrimBytes(std::ifstream& file, std::streamsize n);
 
-RawProto HandleParser(const BaseParser& p, std::ifstream& file,
+RawProto HandleParser(BaseParser& p, std::ifstream& file,
                       std::streamsize& packet_size, RawProto curr_proto);
 }  // namespace packet_parse

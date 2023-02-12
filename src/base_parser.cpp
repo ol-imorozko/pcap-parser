@@ -51,7 +51,7 @@ void TrimBytes(std::ifstream& file, std::streamsize n) {
     file.seekg(static_cast<long>(n), std::ios::cur);
 }
 
-RawProto HandleParser(const BaseParser& p, std::ifstream& file,
+RawProto HandleParser(BaseParser& p, std::ifstream& file,
                       std::streamsize& packet_size, RawProto curr_proto) {
   try {
     RawProto next_proto = p.Parse(file, packet_size, curr_proto);
