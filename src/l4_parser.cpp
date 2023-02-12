@@ -12,6 +12,11 @@ ServiceDataPtr L4Parser::Parse(Stream& packet, std::streamsize& packet_size,
                                ServiceDataPtr data) const {
   auto proto = static_cast<Proto>(data->proto);
 
+#ifdef SPECTRA_SIMBA
+  if (proto != Proto::kUDP)
+    throw UnsupportedL4Payload("Spectra-Simba");
+#endif
+
   switch (proto) {
     case Proto::kUDP: {
       UDP p;
@@ -41,6 +46,17 @@ ServiceDataPtr UDP::Operation(const UDPHeader& header, ServiceDataPtr data) {
   std::cout << "  Length: " << header.length << '\n';
   std::cout << "  Checksum: 0x" << std::hex << header.checksum << std::dec
             << '\n';
+
+#ifdef SPECTRA_SIMBA
+  // We assume that every packet coming to UDP port 20081-20086
+  // is a Spectra-Simba packet
+  constexpr static int spectra_simba_dst_port_low = 20081;
+  constexpr static int spectra_simba_dst_port_high = 20086;
+  if (header.destination_port < spectra_simba_dst_port_low ||
+      header.destination_port > spectra_simba_dst_port_high) {
+    throw UnsupportedL4Payload("Spectra-Simba");
+  }
+#endif
 
   return data;
 }

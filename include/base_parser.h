@@ -42,6 +42,16 @@ class UnknownProto : public std::exception {
   const char* what() const noexcept override { return msg.c_str(); };
 };
 
+class UnsupportedL4Payload : public std::exception {
+ private:
+  std::string msg;
+
+ public:
+  explicit UnsupportedL4Payload(const std::string& protocol_name);
+
+  const char* what() const noexcept override { return msg.c_str(); };
+};
+
 class NotEnoughData : public std::exception {
  private:
   std::string msg;

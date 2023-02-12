@@ -1,7 +1,7 @@
 TARGET   = pcap-parser
 
 CC       = g++
-CFLAGS   = -Wall -Wextra -I. -std=c++20
+CFLAGS   = -Wall -Wextra -I. -std=c++20 -DSPECTRA_SIMBA
 
 LINKER   = g++
 LFLAGS   = -Wall -I. -std=c++20

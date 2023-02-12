@@ -76,6 +76,14 @@ UnknownProto::UnknownProto(RawProto proto) {
   msg = oss.str();
 }
 
+UnsupportedL4Payload::UnsupportedL4Payload(const std::string& protocol_name) {
+  std::ostringstream oss;
+  oss << "The provided PCAP file has other packets other than just "
+      << protocol_name << ". Skipping.";
+
+  msg = oss.str();
+}
+
 NotEnoughData::NotEnoughData(const std::string& protocol_name,
                              size_t protocol_header_size,
                              size_t obtained_size) {
