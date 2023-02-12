@@ -3,8 +3,8 @@
 
 namespace packet_parse::spectra_simba {
 
-RawProto DataParser::Parse(std::ifstream& file, std::streamsize& packet_size,
-                           RawProto raw_proto) const {
+RawProto DataParser::Parse(Stream& packet, std::streamsize& packet_size,
+                           RawProto raw_proto) {
   auto proto = static_cast<DataType>(raw_proto);
 
   switch (proto) {
@@ -18,17 +18,17 @@ RawProto DataParser::Parse(std::ifstream& file, std::streamsize& packet_size,
         // some SBE Message parsers.
         // Also we don't care about the "next_proto" argument, hence
         // zero as a last argument.
-        HandleParser(p, file, packet_size, 0);
+        HandleParser(p, packet, packet_size, 0);
       }
 
       return 0;
     }
     case DataType::SBEMessageWithRepeating: {
       sbe::MessageParser mp;
-      HandleParser(mp, file, packet_size, 0);
+      HandleParser(mp, packet, packet_size, 0);
 
       /* RepeatingSectionParser rsp; */
-      /* HandleParser(rsp, file, packet_size, 0); */
+      /* HandleParser(rsp, packet, packet_size, 0); */
 
       return 0;
     }

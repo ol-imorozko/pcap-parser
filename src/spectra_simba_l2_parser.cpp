@@ -7,14 +7,14 @@
 
 namespace packet_parse::spectra_simba {
 
-RawProto L2Parser::Parse(std::ifstream& file, std::streamsize& packet_size,
-                         [[maybe_unused]] RawProto raw_proto) const {
+RawProto L2Parser::Parse(Stream& packet, std::streamsize& packet_size,
+                         [[maybe_unused]] RawProto raw_proto) {
   auto proto = static_cast<PacketType>(raw_proto);
 
   switch (proto) {
     case PacketType::Incremental: {
       Incremental p;
-      return p.Parse(file, packet_size);
+      return p.Parse(packet, packet_size);
     }
     case PacketType::Snapshot:
       // Next protocol identifier is zero if the packet is Snapshot

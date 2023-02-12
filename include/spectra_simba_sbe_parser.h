@@ -28,8 +28,8 @@ class HeaderParser : public BaseParser {
   mutable size_t root_block_size_{};
 
  public:
-  RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
-                 RawProto raw_proto) const override;
+  RawProto Parse(Stream& packet, std::streamsize& packet_size,
+                 RawProto raw_proto) override;
 
   size_t GetRootBlockSize() const { return root_block_size_; }
 };
@@ -39,14 +39,14 @@ class RootBlockParser : public BaseParser {
   enum class MessageType {};
 
  public:
-  RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
-                 RawProto raw_proto) const override;
+  RawProto Parse(Stream& packet, std::streamsize& packet_size,
+                 RawProto raw_proto) override;
 };
 
 class MessageParser : public BaseParser {
  public:
-  RawProto Parse(std::ifstream& file, std::streamsize& packet_size,
-                 RawProto raw_proto) const override;
+  RawProto Parse(Stream& packet, std::streamsize& packet_size,
+                 RawProto raw_proto) override;
 };
 
 #pragma pack(push, 1)

@@ -5,19 +5,18 @@
 
 namespace packet_parse::spectra_simba::sbe {
 
-RawProto HeaderParser::Parse(std::ifstream& file, std::streamsize& packet_size,
-                             [[maybe_unused]] RawProto raw_proto) const {
+RawProto HeaderParser::Parse(Stream& packet, std::streamsize& packet_size,
+                             [[maybe_unused]] RawProto raw_proto) {
   Header p;
-  RawProto next_proto = p.Parse(file, packet_size);
+  RawProto next_proto = p.Parse(packet, packet_size);
 
   root_block_size_ = p.GetRootBlockSize();
 
   return next_proto;
 }
 
-RawProto RootBlockParser::Parse(std::ifstream& file,
-                                std::streamsize& packet_size,
-                                [[maybe_unused]] RawProto raw_proto) const {
+RawProto RootBlockParser::Parse(Stream& packet, std::streamsize& packet_size,
+                                [[maybe_unused]] RawProto raw_proto) {
   auto proto = static_cast<MessageType>(raw_proto);
 
   switch (proto) {
@@ -26,17 +25,17 @@ RawProto RootBlockParser::Parse(std::ifstream& file,
   }
 }
 
-RawProto MessageParser::Parse(std::ifstream& file, std::streamsize& packet_size,
-                              [[maybe_unused]] RawProto raw_proto) const {
+RawProto MessageParser::Parse(Stream& packet, std::streamsize& packet_size,
+                              [[maybe_unused]] RawProto raw_proto) {
   HeaderParser hp;
-  RawProto next_proto = HandleParser(hp, file, packet_size, raw_proto);
+  RawProto next_proto = HandleParser(hp, packet, packet_size, raw_proto);
 
   auto root_block_size = static_cast<std::streamsize>(hp.GetRootBlockSize());
 
   packet_size -= root_block_size;
 
   RootBlockParser rbp;
-  return HandleParser(rbp, file, root_block_size, next_proto);
+  return HandleParser(rbp, packet, root_block_size, next_proto);
 }
 
 void Header::Operation(const HeaderFormat& header) {
