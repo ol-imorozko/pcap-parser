@@ -94,14 +94,12 @@ ServiceDataPtr OrderUpdate::Operation(const OrderUpdateFormat& header,
   std::cout << "  Instrument numeric code: " << header.security_id << '\n';
   std::cout << "  Incremental refresh sequence number: " << header.rpt_seq
             << '\n';
-  std::cout << "  Incremental refresh type: \n";
 
-  auto md_update_action_bitset = std::bitset<8>(header.md_update_action);
-  PrintFlags(md_update_action_bitset, types::AllMDUpdateActionValues);
+  std::cout << "  Incremental refresh type: \n";
+  PrintEnum(header.md_update_action, types::AllMDUpdateActionValues);
 
   std::cout << "  Record type: \n";
-  auto md_entry_type_bitset = std::bitset<8>(header.md_entry_type);
-  PrintFlags(md_entry_type_bitset, types::AllMDEntryTypeValues);
+  PrintEnum(header.md_entry_type, types::AllMDEntryTypeValues);
 
   return data;
 }
@@ -124,11 +122,15 @@ ServiceDataPtr OrderExecution::Operation(const OrderExecutionFormat& header,
   std::cout << "  Instrument numeric code: " << header.security_id << '\n';
   std::cout << "  Incremental refresh sequence number: " << header.rpt_seq
             << '\n';
+
   std::cout << "  Incremental refresh type: \n";
+  PrintEnum(header.md_update_action, types::AllMDUpdateActionValues);
 
-  auto md_update_action_bitset = std::bitset<8>(header.md_update_action);
-  PrintFlags(md_update_action_bitset, types::AllMDUpdateActionValues);
+  std::cout << "  Record type: \n";
+  PrintEnum(header.md_entry_type, types::AllMDEntryTypeValues);
 
+  return data;
+}
   std::cout << "  Record type: \n";
   auto md_entry_type_bitset = std::bitset<8>(header.md_entry_type);
   PrintFlags(md_entry_type_bitset, types::AllMDEntryTypeValues);

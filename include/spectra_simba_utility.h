@@ -29,11 +29,26 @@ bool Flag(Enum value, std::bitset<N> bitset) {
 template <typename Enum, size_t N>
 void PrintFlags(std::bitset<N> bitset,
                 std::initializer_list<Enum> enum_values) {
-
   for (auto value : enum_values) {
     if (Flag(value, bitset))
       std::cout << "    " << types::GetDescription(value) << '\n';
   }
+}
+
+template <typename Enum, typename T>
+void PrintEnum(T val, std::initializer_list<Enum> enum_values) {
+  bool match = false;
+  for (auto value : enum_values) {
+    if (static_cast<T>(value) == val) {
+      std::cout << "    " << types::GetDescription(value) << '\n';
+      match = true;
+    }
+  }
+
+  // Provoking default case
+  if (!match)
+    std::cout << "    " << types::GetDescription(static_cast<Enum>(val)) << " "
+              << val << '\n';
 }
 namespace sbe {
 // This parser supports only Spectra-Simba Schema with

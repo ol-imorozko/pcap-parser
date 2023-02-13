@@ -72,7 +72,7 @@ enum class MDFlagsSetValue {
 
 enum class MDUpdateActionValue { kNew = 0, kChange = 1, kDelete = 2 };
 
-enum class MDEntryTypeValue { kBid = 0, kOffer = 1, kEmptyBook = 2 };
+enum class MDEntryTypeValue { kBid = '0', kOffer = '1', kEmptyBook = 'J' };
 
 extern const std::initializer_list<MDFlagsSetValue> AllMDFlagsValues;
 extern const std::initializer_list<MDUpdateActionValue> AllMDUpdateActionValues;
