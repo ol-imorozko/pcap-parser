@@ -16,6 +16,13 @@ struct Decimal5 {
 
 std::ostream& operator<<(std::ostream& os, Decimal5 const& val);
 
+struct ExchangeTradingSessionID {
+  uint32_t exchange_trading_session_id;
+  constexpr static const uint32_t null_value = 4294967295;
+};
+
+std::ostream& operator<<(std::ostream& os, ExchangeTradingSessionID const& val);
+
 enum class MsgFlagsSetValue {
   kLastFragment = 0,
   kStartOfSnapshot = 1,
