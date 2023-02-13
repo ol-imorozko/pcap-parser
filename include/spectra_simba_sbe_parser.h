@@ -29,11 +29,11 @@ struct OrderUpdateFormat {
   int64_t md_entry_id;
   types::Decimal5 md_entry_px;
   int64_t md_entry_size;
-  /* types::MDFlagsSet md_flags; */
+  types::MDFlagsSet md_flags;
   int32_t security_id;
   uint32_t rpt_seq;
-  /* types::MDUpdateAction md_update_action; */
-  /* types::MDEntryType md_entry_type; */
+  types::MDUpdateAction md_update_action;
+  types::MDEntryType md_entry_type;
   constexpr static const char name[] = "Spectra-Simba 4.1.3. OrderUpdate";
 };
 #pragma pack(pop)

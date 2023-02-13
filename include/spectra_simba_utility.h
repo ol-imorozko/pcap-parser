@@ -1,6 +1,11 @@
 #pragma once
+#include <bitset>
+#include <initializer_list>
+#include <iostream>
 #include <memory>
+
 #include "include/base_parser.h"
+#include "include/spectra_simba_types.h"
 namespace packet_parse::spectra_simba {
 
 void PrintTimeStamp(uint64_t ns_since_epoch);
@@ -13,6 +18,23 @@ struct FormatIndicator : ServiceData {
   explicit FormatIndicator(PacketFormat format) : format(format){};
 };
 
+template <typename Enum, size_t N>
+bool Flag(Enum value, std::bitset<N> bitset) {
+  return bitset[static_cast<size_t>(value)];
+}
+
+/* template <typename Enum, size_t N> */
+/* void PrintFlags(std::bitset<N> bitset, std::initializer_list<Enum> enum_values); */
+
+template <typename Enum, size_t N>
+void PrintFlags(std::bitset<N> bitset,
+                std::initializer_list<Enum> enum_values) {
+
+  for (auto value : enum_values) {
+    if (Flag(value, bitset))
+      std::cout << "    " << types::GetDescription(value) << '\n';
+  }
+}
 namespace sbe {
 // This parser supports only Spectra-Simba Schema with
 // Version: 19780, ID: 1, Semantic Version: FIX5SP2

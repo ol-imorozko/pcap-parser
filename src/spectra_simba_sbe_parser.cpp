@@ -1,8 +1,10 @@
+#include <bitset>
 #include <ios>
 #include <iostream>
 #include <memory>
 
 #include "include/spectra_simba_sbe_parser.h"
+#include "include/spectra_simba_types.h"
 #include "include/spectra_simba_utility.h"
 
 namespace packet_parse::spectra_simba::sbe {
@@ -61,8 +63,10 @@ ServiceDataPtr RootBlockParser::Parse(Stream& packet,
     throw UnsupportedSchema(metadata->schema_id, metadata->schema_version);
 
   switch (message_type) {
-    /* case MessageType::kOrderUpdate: { */
-    /* } */
+    case MessageType::kOrderUpdate: {
+      OrderUpdate p;
+      return p.Parse(packet, packet_size, std::move(data));
+    }
     /* case MessageType::kOrderExecution: { */
     /* } */
     /* case MessageType::kOrderBookSnapshot: { */
@@ -72,6 +76,32 @@ ServiceDataPtr RootBlockParser::Parse(Stream& packet,
       throw UnknownProto(data->proto);
     }
   }
+}
+
+ServiceDataPtr OrderUpdate::Operation(const OrderUpdateFormat& header,
+                                      ServiceDataPtr data) {
+  std::cout << "OrderUpdate header:\n";
+  std::cout << "  Order ID: " << header.md_entry_id << '\n';
+  std::cout << "  Order price: " << header.md_entry_px << '\n';
+  std::cout << "  Order Volume: " << header.md_entry_size << '\n';
+  std::cout << "  Order Type: \n";
+
+  auto md_flags_bitset = std::bitset<64>(header.md_flags);
+  PrintFlags(md_flags_bitset, types::AllMDFlagsValues);
+
+  std::cout << "  Instrument numeric code: " << header.security_id << '\n';
+  std::cout << "  Incremental refresh sequence number: " << header.rpt_seq
+            << '\n';
+  std::cout << "  Incremental refresh type: \n";
+
+  auto md_update_action_bitset = std::bitset<8>(header.md_update_action);
+  PrintFlags(md_update_action_bitset, types::AllMDUpdateActionValues);
+
+  std::cout << "  Record type: \n";
+  auto md_entry_type_bitset = std::bitset<8>(header.md_entry_type);
+  PrintFlags(md_entry_type_bitset, types::AllMDEntryTypeValues);
+
+  return data;
 }
 
 std::string RootBlockParser::MessageTypeToString(MessageType t) {
