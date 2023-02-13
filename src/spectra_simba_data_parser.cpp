@@ -28,18 +28,8 @@ ServiceDataPtr DataParser::Parse(Stream& packet, std::streamsize& packet_size,
       return data;
     }
     case PacketFormat::kSnapshot: {
-      // Simba Spectra 2.3.1. Incremental packet format
-      // Packet consists of the following parts:
-      // ...
-      // FIX message in SBE format
-      //
-      // Also there are RepeatingGroupDimensions header right after
-      // the Root block.
       sbe::MessageParser mp;
       return HandleParser(mp, packet, packet_size, std::move(data));
-
-      /* RepeatingSectionParser rsp; */
-      /* HandleParser(rsp, packet, packet_size, 0); */
     }
     default:
       throw UnknownProto(data->proto);

@@ -70,14 +70,18 @@ class UnsupportedSchema : public std::exception {
   const char* what() const noexcept override { return msg.c_str(); };
 };
 
-struct RootBlockMetadata : ServiceData {
+struct RootBlockMetadata : FormatIndicator {
   bool schema_supported;
   uint16_t schema_version;
   uint16_t schema_id;
   size_t root_block_size;
 
-  RootBlockMetadata(uint16_t id, uint16_t version, size_t size)
-      : schema_version(version), schema_id(id), root_block_size(size) {
+  RootBlockMetadata(uint16_t id, uint16_t version, size_t size,
+                    PacketFormat format)
+      : FormatIndicator(format),
+        schema_version(version),
+        schema_id(id),
+        root_block_size(size) {
     schema_supported = SchemaSupported(id, version);
   };
 };

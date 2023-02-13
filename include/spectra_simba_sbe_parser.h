@@ -1,5 +1,4 @@
 #pragma once
-
 #include "include/base_parser.h"
 #include "include/spectra_simba_types.h"
 
@@ -49,6 +48,30 @@ struct OrderExecutionFormat {
   types::MDUpdateAction md_update_action;
   types::MDEntryType md_entry_type;
   constexpr static const char name[] = "Spectra-Simba 4.1.4. OrderExecution";
+};
+struct OrderBookSnapshotFormatFirstPart {
+  int32_t security_id;
+  uint32_t last_msg_seq_num_processed;
+  uint32_t rpt_seq;
+  uint32_t exchange_trading_session_id;
+  constexpr static const char name[] = "Spectra-Simba 4.1.5. OrderBookSnapshot";
+};
+struct RepeatingGroupDimensionsFormat {
+  uint16_t block_length;
+  uint8_t num_in_group;
+  constexpr static const char name[] =
+      "Spectra-Simba 2.3.6. Repeating group dimensions";
+};
+struct OrderBookSnapshotFormatGroupPart {
+  types::Int64NULL md_entry_id;
+  uint64_t transact_time;
+  types::Decimal5NULL md_entry_px;
+  types::Int64NULL md_entry_size;
+  types::Int64NULL trade_id;
+  types::MDFlagsSet md_flags;
+  types::MDEntryType md_entry_type;
+  constexpr static const char name[] =
+      "Spectra-Simba 4.1.5. OrderBookSnapshot, Repeating Group Section";
 };
 #pragma pack(pop)
 
@@ -100,6 +123,30 @@ class OrderExecution
     : public Protocol<OrderExecutionFormat, OrderExecutionFormat::name> {
  private:
   ServiceDataPtr Operation(const OrderExecutionFormat& header,
+                           ServiceDataPtr data) override;
+};
+
+class OrderBookSnapshotFirstPart
+    : public Protocol<OrderBookSnapshotFormatFirstPart,
+                      OrderBookSnapshotFormatFirstPart::name> {
+ private:
+  ServiceDataPtr Operation(const OrderBookSnapshotFormatFirstPart& header,
+                           ServiceDataPtr data) override;
+};
+
+class RepeatingGroupDimensions
+    : public Protocol<RepeatingGroupDimensionsFormat,
+                      RepeatingGroupDimensionsFormat::name> {
+ private:
+  ServiceDataPtr Operation(const RepeatingGroupDimensionsFormat& header,
+                           ServiceDataPtr data) override;
+};
+
+class OrderBookSnapshotGroupPart
+    : public Protocol<OrderBookSnapshotFormatGroupPart,
+                      OrderBookSnapshotFormatGroupPart::name> {
+ private:
+  ServiceDataPtr Operation(const OrderBookSnapshotFormatGroupPart& header,
                            ServiceDataPtr data) override;
 };
 
