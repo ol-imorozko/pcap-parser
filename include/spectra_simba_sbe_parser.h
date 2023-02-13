@@ -36,6 +36,20 @@ struct OrderUpdateFormat {
   types::MDEntryType md_entry_type;
   constexpr static const char name[] = "Spectra-Simba 4.1.3. OrderUpdate";
 };
+struct OrderExecutionFormat {
+  int64_t md_entry_id;
+  types::Decimal5NULL md_entry_px;
+  types::Int64NULL md_entry_size;
+  types::Decimal5 last_px;
+  int64_t last_qty;
+  int64_t trade_id;
+  types::MDFlagsSet md_flags;
+  int32_t security_id;
+  uint32_t rpt_seq;
+  types::MDUpdateAction md_update_action;
+  types::MDEntryType md_entry_type;
+  constexpr static const char name[] = "Spectra-Simba 4.1.4. OrderExecution";
+};
 #pragma pack(pop)
 
 class Header : public Protocol<HeaderFormat, HeaderFormat::name> {
@@ -79,6 +93,13 @@ class OrderUpdate
     : public Protocol<OrderUpdateFormat, OrderUpdateFormat::name> {
  private:
   ServiceDataPtr Operation(const OrderUpdateFormat& header,
+                           ServiceDataPtr data) override;
+};
+
+class OrderExecution
+    : public Protocol<OrderExecutionFormat, OrderExecutionFormat::name> {
+ private:
+  ServiceDataPtr Operation(const OrderExecutionFormat& header,
                            ServiceDataPtr data) override;
 };
 

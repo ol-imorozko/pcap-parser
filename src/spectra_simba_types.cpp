@@ -6,6 +6,21 @@ std::ostream& operator<<(std::ostream& os, Decimal5 const& val) {
   return os << static_cast<double>(val.mantissa) * pow(10, Decimal5::exponent);
 }
 
+std::ostream& operator<<(std::ostream& os, Decimal5NULL const& val) {
+  if (val.mantissa == Decimal5NULL::null_value)
+    return os << "Not present";
+
+  return os << static_cast<double>(val.mantissa) *
+                   pow(10, Decimal5NULL::exponent);
+}
+
+std::ostream& operator<<(std::ostream& os, Int64NULL const& val) {
+  if (val.value == Int64NULL::null_value)
+    return os << "Not present";
+
+  return os << val.value;
+}
+
 std::ostream& operator<<(std::ostream& os,
                          ExchangeTradingSessionID const& val) {
   if (val.exchange_trading_session_id == ExchangeTradingSessionID::null_value)

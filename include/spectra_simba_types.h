@@ -16,6 +16,22 @@ struct Decimal5 {
 
 std::ostream& operator<<(std::ostream& os, Decimal5 const& val);
 
+struct Decimal5NULL {
+  int64_t mantissa;
+  constexpr static const int8_t exponent = -5;
+  constexpr static const int64_t null_value = 9223372036854775807;
+};
+
+std::ostream& operator<<(std::ostream& os, Decimal5NULL const& val);
+
+struct Int64NULL {
+  int64_t value;
+  constexpr static const int64_t null_value =
+      std::numeric_limits<int64_t>::min();
+};
+
+std::ostream& operator<<(std::ostream& os, Int64NULL const& val);
+
 struct ExchangeTradingSessionID {
   uint32_t exchange_trading_session_id;
   constexpr static const uint32_t null_value = 4294967295;
