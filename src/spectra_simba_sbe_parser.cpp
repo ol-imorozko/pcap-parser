@@ -125,10 +125,10 @@ ServiceDataPtr OrderUpdate::Operation(const OrderUpdateFormat& header,
   std::cout << "  Incremental refresh sequence number: " << header.rpt_seq
             << '\n';
 
-  std::cout << "  Incremental refresh type: \n";
+  std::cout << "  Incremental refresh type:\n";
   PrintEnum(header.md_update_action, types::AllMDUpdateActionValues);
 
-  std::cout << "  Record type: \n";
+  std::cout << "  Record type:\n";
   PrintEnum(header.md_entry_type, types::AllMDEntryTypeValues);
 
   return data;
@@ -153,10 +153,10 @@ ServiceDataPtr OrderExecution::Operation(const OrderExecutionFormat& header,
   std::cout << "  Incremental refresh sequence number: " << header.rpt_seq
             << '\n';
 
-  std::cout << "  Incremental refresh type: \n";
+  std::cout << "  Incremental refresh type:\n";
   PrintEnum(header.md_update_action, types::AllMDUpdateActionValues);
 
-  std::cout << "  Record type: \n";
+  std::cout << "  Record type:\n";
   PrintEnum(header.md_entry_type, types::AllMDEntryTypeValues);
 
   return data;
@@ -196,12 +196,12 @@ ServiceDataPtr OrderBookSnapshotGroupPart::Operation(
   std::cout << "  Order price: " << header.md_entry_px << '\n';
   std::cout << "  Order Volume: " << header.md_entry_size << '\n';
   std::cout << "  Trade ID: " << header.trade_id << '\n';
-  std::cout << "  Order or trade type: \n";
+  std::cout << "  Order or trade type:\n";
 
   auto md_flags_bitset = std::bitset<64>(header.md_flags);
   PrintFlags(md_flags_bitset, types::AllMDFlagsValues);
 
-  std::cout << "  Record type: \n";
+  std::cout << "  Record type:\n";
   PrintEnum(header.md_entry_type, types::AllMDEntryTypeValues);
   return data;
 }
